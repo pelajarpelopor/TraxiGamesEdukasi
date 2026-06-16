@@ -1,0 +1,2324 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRAXI - Traffic & Experience Interactive</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Poppins & Montserrat) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        road: '#1a1d24',
+                        accentYellow: '#f59e0b',
+                        accentBlue: '#2563eb',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shake': 'shake 0.3s ease-in-out',
+                    },
+                    keyframes: {
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
+                            '20%, 40%, 60%, 80%': { transform: 'translateX(5px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- NOTIFIKASI TOAST CUSTOM (Pengganti Alert) -->
+    <div id="toastNotification" class="fixed top-20 right-4 z-50 transform translate-x-96 transition-transform duration-300 bg-slate-950 border-l-4 border-amber-500 text-slate-200 px-4 py-3 rounded-r-xl shadow-2xl flex items-center space-x-3 max-w-sm">
+        <div id="toastIcon" class="text-amber-500">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p id="toastTitle" class="text-xs font-black uppercase tracking-wider text-amber-500">Pemberitahuan</p>
+            <p id="toastMessage" class="text-xs text-slate-400">Pesan notifikasi di sini.</p>
+        </div>
+    </div>
+
+    <!-- ==========================================
+        VIEW 0: LOGIN SCREEN (TANPA PILIH AVATAR)
+       ========================================== -->
+    <section id="view-login" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950 animate-fadeIn">
+        <div class="bg-slate-900/90 border border-slate-800 w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 backdrop-blur-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
+            
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-gradient-to-tr from-amber-500 to-blue-600 rounded-2xl shadow-inner shadow-white/15 mb-2">
+                    <i data-lucide="shield" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="text-3xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-amber-400 to-amber-500 bg-clip-text text-transparent font-montserrat uppercase">TRAXI ID</h1>
+                <p class="text-xs text-slate-400">Registrasi Karakter Keselamatan Lalu Lintas Remaja</p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Username -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nama Panggilan Pengendara</label>
+                    <input id="loginUsername" type="text" placeholder="Masukkan nama panggilanmu..." class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-4 py-3 text-sm focus:outline-none text-white font-semibold transition" value="Ksatria_Jalanan" />
+                </div>
+
+                <!-- Safe Riding Pledge -->
+                <div class="flex items-start space-x-2.5 bg-slate-950/50 p-3.5 rounded-xl border border-slate-850">
+                    <input type="checkbox" id="pledgeCheckbox" class="mt-0.5 rounded text-blue-600 bg-slate-850 border-slate-700 focus:ring-0 focus:ring-offset-0 cursor-pointer" checked />
+                    <label for="pledgeCheckbox" class="text-[10px] text-slate-400 leading-relaxed cursor-pointer select-none">Saya berjanji akan bermain dengan jujur, belajar menaati rambu-rambu lalu lintas, dan mengutamakan keselamatan saat berkendara di jalan raya nyata.</label>
+                </div>
+
+                <button onclick="performLogin()" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-blue-500/10">
+                    Mulai Belajar & Bermain
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL CUSTOM UNTUK EVALUASI DETAIL (RAPOR MENGEMUDI) -->
+    <div id="evalDetailModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 animate-fadeIn">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="award" class="text-amber-500 w-5 h-5"></i> Rapor Evaluasi Mengemudi
+                </h3>
+                <button onclick="closeEvalModal()" class="text-slate-400 hover:text-white transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="text-center space-y-1 py-2 bg-slate-950/50 rounded-2xl border border-slate-850">
+                    <div id="evalMedalIcon" class="text-5xl animate-bounce">🥇</div>
+                    <h4 id="evalMedalTitle" class="text-md font-black text-amber-400 font-montserrat uppercase">Medali Emas</h4>
+                    <p id="evalScoreNumber" class="text-xs text-slate-400 font-mono">Skor Akhir: 95 / 100 Pts</p>
+                </div>
+
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+                    <span class="text-[10px] text-slate-500 uppercase font-bold">Rekomendasi Utama Instruktur:</span>
+                    <p id="evalRekomendasiText" class="text-xs text-slate-300 font-semibold leading-relaxed">Menggunakan helm standar, selalu memberi prioritas pejalan kaki di setiap zebra cross persimpangan.</p>
+                </div>
+            </div>
+            <div class="pt-2">
+                <button onclick="closeEvalModal()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition shadow-md">
+                    Saya Paham & Berjanji Disiplin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN WRAPPER (Sembunyi Sebelum Login) -->
+    <div id="main-application" class="hidden flex-col min-h-screen">
+        
+        <!-- GLOBAL TOP NAVIGATION HEADER -->
+        <nav class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-lg">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('dashboard')">
+                <div class="p-2.5 bg-gradient-to-tr from-amber-500 to-blue-600 rounded-xl shadow-inner shadow-white/10 animate-pulse-slow">
+                    <i data-lucide="shield" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <span class="text-2xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-amber-400 to-amber-500 bg-clip-text text-transparent font-montserrat font-black">TRAXI</span>
+                    <p class="text-[9px] text-slate-400 font-medium tracking-widest uppercase hidden sm:block">Traffic & Experience Interactive</p>
+                </div>
+            </div>
+
+            <!-- NAVIGATION BAR (DESKTOP) -->
+            <div class="hidden md:flex items-center space-x-1 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800">
+                <button id="nav-dashboard" onclick="switchView('dashboard')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-white bg-blue-600 shadow-md">Dashboard</button>
+                <button id="nav-simulasi" onclick="switchView('simulasi')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800">Simulasi</button>
+                <button id="nav-edukasi" onclick="switchView('edukasi')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800">Edukasi Corner</button>
+                <button id="nav-forum" onclick="switchView('forum')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800">AI Cerdas</button>
+                <button id="nav-admin" onclick="switchView('admin')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-500 hover:text-amber-400 hover:bg-slate-800">Admin Panel</button>
+            </div>
+
+            <!-- PROFILE & POINTS STATUS BAR -->
+            <div class="flex items-center space-x-3 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+                <div class="text-right hidden sm:block">
+                    <p id="navUserProfileName" class="text-xs font-bold text-slate-200">Ksatria_Jalanan</p>
+                    <div class="flex items-center justify-end space-x-1.5">
+                        <span id="globalLevelBadge" class="text-[9px] bg-blue-500/20 text-blue-400 font-extrabold px-1.5 py-0.5 rounded border border-blue-500/30">LVL 5</span>
+                        <span id="globalPointsBadge" class="text-xs font-black text-amber-400 flex items-center gap-0.5 font-mono"><i data-lucide="trophy" class="w-3 h-3"></i> 1250</span>
+                    </div>
+                </div>
+                <div id="navUserProfileAvatar" class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black border-2 border-slate-700 shadow-inner text-xl">👤</div>
+            </div>
+        </nav>
+
+        <!-- MOBILE BOTTOM NAVIGATION BAR -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-800 grid grid-cols-5 z-40 text-center py-2 text-[10px] text-slate-400">
+            <button onclick="switchView('dashboard')" id="mob-dashboard" class="text-blue-400 font-bold"><i data-lucide="user" class="w-5 h-5 mx-auto mb-0.5"></i>Hub</button>
+            <button onclick="switchView('simulasi')" id="mob-simulasi"><i data-lucide="car" class="w-5 h-5 mx-auto mb-0.5"></i>Simulasi</button>
+            <button onclick="switchView('edukasi')" id="mob-edukasi"><i data-lucide="book-open" class="w-5 h-5 mx-auto mb-0.5"></i>Edukasi</button>
+            <button onclick="switchView('forum')" id="mob-forum"><i data-lucide="message-square" class="w-5 h-5 mx-auto mb-0.5"></i>AI Cerdas</button>
+            <button onclick="switchView('admin')" id="mob-admin"><i data-lucide="settings" class="w-5 h-5 mx-auto mb-0.5"></i>Admin</button>
+        </div>
+
+        <!-- MAIN VIEWS WRAPPER -->
+        <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto pb-24 md:pb-12">
+
+            <!-- ==========================================
+                VIEW 1: DASHBOARD MAIN HUB (HOME)
+               ========================================== -->
+            <section id="view-dashboard" class="space-y-8 animate-fadeIn">
+                <!-- HERO HEADER CARD -->
+                <div class="relative overflow-hidden bg-gradient-to-r from-blue-950 via-slate-950 to-slate-950 rounded-3xl p-6 md:p-10 border border-slate-800/80 shadow-2xl">
+                    <div class="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute bottom-0 left-1/3 -mb-12 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div class="relative max-w-2xl z-10 space-y-4">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Edukasi Keselamatan Lalu Lintas Remaja v2.5
+                        </span>
+                        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight font-montserrat font-black">
+                            Uji Nyali & Kepatuhan Berkendaramu di Jalan Raya!
+                        </h1>
+                        <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                            TRAXI mengkombinasikan keseruan game simulasi berkendara interaktif dengan pemahaman aturan lalu lintas esensial. Siap membuktikan dirimu layak mengantongi SIM?
+                        </p>
+                        <div class="pt-2 flex flex-wrap gap-3">
+                            <button onclick="startSimulationFlow()" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black rounded-xl hover:from-amber-400 hover:to-amber-500 transition shadow-lg shadow-amber-500/20 flex items-center gap-2 text-xs md:text-sm">
+                                <i data-lucide="play" class="w-4 h-4 fill-slate-950"></i> MULAI SIMULASI SEKARANG
+                            </button>
+                            <button onclick="switchView('edukasi')" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition text-xs">
+                                Pelajari Rambu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW SECTION: KALKULATOR EMISI ZAT KARBON -->
+                <div class="bg-gradient-to-tr from-slate-950 to-slate-900 border border-emerald-500/20 rounded-3xl p-6 shadow-xl space-y-4 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl"></div>
+                    <div class="flex items-center gap-2">
+                        <div class="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
+                            <i data-lucide="leaf" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-md font-bold text-white font-montserrat">Kalkulator Emisi Karbon Transportasi</h3>
+                            <p class="text-[11px] text-slate-400">Hitung seberapa hijau caramu melakukan perjalanan sekolah atau bermain</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-1">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Pilih Kendaraan</label>
+                            <select id="calcVehicle" class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none">
+                                <option value="sepeda">🚲 Sepeda Gowes (Tanpa Bahan Bakar)</option>
+                                <option value="motor">🛵 Sepeda Motor Skuter (Bensin)</option>
+                                <option value="mobil">🚗 Mobil Sedan (Bensin)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Jarak Tempuh (Kilometer / KM)</label>
+                            <input id="calcDistance" type="number" min="1" max="1000" value="5" class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none" />
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="calculateCarbonEmission()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow-lg shadow-emerald-600/10 flex items-center justify-center gap-1.5">
+                                <i data-lucide="calculator" class="w-4 h-4"></i> Hitung Emisi Karbon
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Carbon Result Display -->
+                    <div id="calcResultBox" class="hidden bg-slate-900/60 border border-slate-800 rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center animate-fadeIn text-xs">
+                        <div class="space-y-1">
+                            <p class="text-slate-400 font-medium">Estimasi Emisi Zat Karbon ($CO_2$):</p>
+                            <h2 id="calcEmissionVal" class="text-2xl font-black text-emerald-400 font-mono">0 Gram CO₂</h2>
+                            <p id="calcComparisonText" class="text-[11px] text-slate-400 leading-relaxed">Sangat ramah lingkungan! Sepeda menghasilkan 0 gram gas emisi berbahaya.</p>
+                        </div>
+                        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-850 flex items-start gap-3">
+                            <div class="text-2xl mt-0.5">🌳</div>
+                            <div>
+                                <h4 class="font-bold text-white text-[11px] mb-0.5">Kebutuhan Kompensasi Pohon</h4>
+                                <p id="calcTreeText" class="text-[10px] text-slate-400 leading-relaxed">Dibutuhkan 0 pohon dewasa hidup selama satu hari penuh untuk menyerap emisi dari perjalanan ini.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATS & LEADERBOARD GRID -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- STATISTIK PRIBADI -->
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-6">
+                        <div>
+                            <h3 class="text-md font-bold text-white mb-4 flex items-center gap-2">
+                                <i data-lucide="award" class="w-4 h-4 text-blue-400"></i> Statistik Pengendara Anda
+                            </h3>
+                            <div class="grid grid-cols-2 gap-3">
+                              <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/60">
+                                <p class="text-[10px] text-slate-400 font-medium">Jarak Tempuh</p>
+                                <p class="text-lg font-black text-white mt-1 font-mono">42.8 <span class="text-[10px] font-normal text-slate-500">KM</span></p>
+                              </div>
+                              <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/60">
+                                <p class="text-[10px] text-slate-400 font-medium">Tingkat Kepatuhan</p>
+                                <p class="text-lg font-black text-emerald-400 mt-1 font-mono">89.4%</p>
+                              </div>
+                              <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/60">
+                                <p class="text-[10px] text-slate-400 font-medium">Simulasi Diikuti</p>
+                                <p class="text-lg font-black text-white mt-1 font-mono">14 <span class="text-[10px] font-normal text-slate-500">Sesi</span></p>
+                              </div>
+                              <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/60">
+                                <p class="text-[10px] text-slate-400 font-medium">Pelanggaran Fatal</p>
+                                <p class="text-lg font-black text-rose-400 mt-1 font-mono">2 <span class="text-[10px] font-normal text-slate-500">Kali</span></p>
+                              </div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-slate-800/80">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
+                                <span class="font-semibold">Progres Level Berikutnya</span>
+                                <span id="levelProgresText" class="font-mono">50 / 300 Pts</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div id="levelProgresBar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full transition-all duration-300" style="width: 16.6%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PAPAN PERINGKAT (LEADERBOARD) -->
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
+                        <h3 class="text-md font-bold text-white flex items-center gap-2">
+                            <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Papan Peringkat (Pekan Ini)
+                        </h3>
+                        <div class="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1">
+                            <!-- Peringkat 1 -->
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800/40">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 flex items-center justify-center font-black rounded-lg text-xs bg-amber-400 text-slate-950">1</span>
+                                    <span class="text-xs font-semibold text-slate-300">Rangga_Sanjaya</span>
+                                </div>
+                                <span class="text-xs font-mono font-bold text-amber-400 flex items-center gap-1">2450 pts 👑</span>
+                            </div>
+                            <!-- Peringkat 2 -->
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800/40">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 flex items-center justify-center font-black rounded-lg text-xs bg-slate-300 text-slate-950">2</span>
+                                    <span class="text-xs font-semibold text-slate-300">Dewi_Safitri</span>
+                                </div>
+                                <span class="text-xs font-mono font-bold text-slate-400 flex items-center gap-1">2100 pts ⭐</span>
+                            </div>
+                            <!-- Peringkat 3 -->
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800/40">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 flex items-center justify-center font-black rounded-lg text-xs bg-amber-700 text-white">3</span>
+                                    <span class="text-xs font-semibold text-slate-300">Fahri_Ramadhan</span>
+                                </div>
+                                <span class="text-xs font-mono font-bold text-amber-700 flex items-center gap-1">1980 pts ⚡</span>
+                            </div>
+                            <!-- Peringkat 4 (Kamu) -->
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-blue-950/40 border border-blue-500/40">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 flex items-center justify-center font-black rounded-lg text-xs bg-slate-800 text-slate-300">4</span>
+                                    <span id="dashboardUserNick" class="text-xs font-black text-blue-300">Ksatria_Jalanan</span>
+                                </div>
+                                <span id="leaderboardUserPoints" class="text-xs font-mono font-bold text-blue-400 flex items-center gap-1">1250 pts 🔰</span>
+                            </div>
+                            <!-- Peringkat 5 -->
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800/40">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 flex items-center justify-center font-black rounded-lg text-xs bg-slate-800 text-slate-500">5</span>
+                                    <span class="text-xs font-semibold text-slate-300">Andini_Putri</span>
+                                </div>
+                                <span class="text-xs font-mono font-bold text-slate-500 flex items-center gap-1">1120 pts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QUICK PREVIEW (EDUKASI & AI CERDAS) -->
+                    <div class="space-y-4 flex flex-col justify-between">
+                        <div class="bg-gradient-to-br from-slate-950 to-slate-900 border border-slate-800 rounded-2xl p-4 flex items-start gap-3">
+                            <div class="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20">
+                                <i data-lucide="book-open" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1 space-y-1">
+                                <h4 class="text-xs font-bold text-white">Edukasi Corner Pilihan</h4>
+                                <p class="text-[11px] text-slate-400 line-clamp-2">Pahami teknik berkendara Defensive Riding untuk mengantisipasi aksi ceroboh pengguna jalan lain.</p>
+                                <button onClick="switchView('edukasi')" class="text-[11px] text-blue-400 hover:text-blue-300 font-bold pt-1 inline-flex items-center gap-0.5">Mulai Baca <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-slate-950 to-slate-900 border border-slate-800 rounded-2xl p-4 flex items-start gap-3">
+                            <div class="p-2.5 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20">
+                                <i data-lucide="cpu" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1 space-y-1">
+                                <h4 class="text-xs font-bold text-white">Asisten AI Cerdas TRAXI</h4>
+                                <p class="text-[11px] text-slate-400 line-clamp-2">Ada rambu yang tidak kamu pahami? Tanyakan langsung pada TRABOT sekarang!</p>
+                                <button onclick="switchView('forum')" class="text-[11px] text-amber-400 hover:text-amber-300 font-bold pt-1 inline-flex items-center gap-0.5">Bicara dengan AI <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==========================================
+                VIEW 2: MULTI-STEP GAMEPLAY SIMULATION
+               ========================================== -->
+            <section id="view-simulasi" class="hidden max-w-4xl mx-auto bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-fadeIn">
+                <!-- PROGRESS STEPPER -->
+                <div class="bg-slate-900 border-b border-slate-800 px-6 py-4 grid grid-cols-4 gap-2 text-center text-[10px] md:text-xs font-bold tracking-wide">
+                    <div id="step-indicator-1" class="pb-2 border-b-2 border-blue-500 text-blue-400 transition-all duration-300">1. Pilih Kendaraan</div>
+                    <div id="step-indicator-2" class="pb-2 border-b-2 border-transparent text-slate-500 transition-all duration-300">2. Cek Perlengkapan</div>
+                    <div id="step-indicator-3" class="pb-2 border-b-2 border-transparent text-slate-500 transition-all duration-300">3. Simulasi Jalan</div>
+                    <div id="step-indicator-4" class="pb-2 border-b-2 border-transparent text-slate-500 transition-all duration-300">4. Hasil Evaluasi</div>
+                </div>
+
+                <div class="p-6 md:p-8">
+                    <!-- STEP 1: CHOOSE VEHICLE -->
+                    <div id="sim-step-1" class="space-y-6">
+                        <div class="text-center space-y-1">
+                            <h2 class="text-xl md:text-2xl font-black text-white font-montserrat">Pilih Jenis Kendaraan Simulasi</h2>
+                            <p class="text-xs text-slate-400">Setiap kendaraan memiliki dimensi, bobot, tingkat kerawanan, dan regulasi keselamatan yang berbeda.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <!-- Sepeda Motor -->
+                            <div onclick="selectVehicle('motor')" id="card-vehicle-motor" class="cursor-pointer group relative p-5 rounded-2xl border-2 bg-slate-900 border-slate-800 hover:border-slate-700 transition flex flex-col justify-between space-y-4">
+                                <div class="space-y-2">
+                                    <div class="text-5xl group-hover:scale-110 transition duration-200">🛵</div>
+                                    <span class="inline-block text-[9px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-extrabold uppercase tracking-wider border border-slate-700">Roda 2</span>
+                                    <h4 class="text-md font-bold text-white">Sepeda Motor (Skuter)</h4>
+                                    <p class="text-xs text-slate-400 leading-relaxed">Sangat lincah dan cepat, namun memiliki risiko tinggi saat kecelakaan. Membutuhkan helm SNI & jaket tebal.</p>
+                                </div>
+                                <div class="flex items-center justify-end">
+                                    <div id="check-vehicle-motor" class="w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center font-bold text-white text-xs"></div>
+                                </div>
+                            </div>
+                            <!-- Mobil Sedan -->
+                            <div onclick="selectVehicle('mobil')" id="card-vehicle-mobil" class="cursor-pointer group relative p-5 rounded-2xl border-2 bg-slate-900 border-slate-800 hover:border-slate-700 transition flex flex-col justify-between space-y-4">
+                                <div class="space-y-2">
+                                    <div class="text-5xl group-hover:scale-110 transition duration-200">🚗</div>
+                                    <span class="inline-block text-[9px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-extrabold uppercase tracking-wider border border-slate-700">Roda 4</span>
+                                    <h4 class="text-md font-bold text-white">Mobil (Sedan)</h4>
+                                    <p class="text-xs text-slate-400 leading-relaxed">Struktur terlindungi dari cuaca, namun butuh jarak pengereman panjang. Sabuk pengaman wajib dipasang.</p>
+                                </div>
+                                <div class="flex items-center justify-end">
+                                    <div id="check-vehicle-mobil" class="w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center font-bold text-white text-xs"></div>
+                                </div>
+                            </div>
+                            <!-- Sepeda Gowes -->
+                            <div onclick="selectVehicle('sepeda')" id="card-vehicle-sepeda" class="cursor-pointer group relative p-5 rounded-2xl border-2 bg-slate-900 border-slate-800 hover:border-slate-700 transition flex flex-col justify-between space-y-4">
+                                <div class="space-y-2">
+                                    <div class="text-5xl group-hover:scale-110 transition duration-200">🚲</div>
+                                    <span class="inline-block text-[9px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-extrabold uppercase tracking-wider border border-slate-700">Roda 2</span>
+                                    <h4 class="text-md font-bold text-white">Sepeda Gowes</h4>
+                                    <p class="text-xs text-slate-400 leading-relaxed">Lambat dan ramah lingkungan, namun rentan di jalan utama. Wajib menggunakan helm sepeda khusus.</p>
+                                </div>
+                                <div class="flex items-center justify-end">
+                                    <div id="check-vehicle-sepeda" class="w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center font-bold text-white text-xs"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end">
+                            <button id="btnContinueStep2" onclick="goStep2()" class="px-6 py-3 font-bold rounded-xl flex items-center gap-1.5 transition bg-slate-800 text-slate-500 cursor-not-allowed text-xs" disabled>
+                                Lanjutkan Persiapan <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: GEAR UP SCREEN -->
+                    <div id="sim-step-2" class="hidden space-y-6">
+                        <div class="text-center space-y-1">
+                            <h2 class="text-xl md:text-2xl font-black text-white font-montserrat">Persiapan Berkendara (Gear Up)</h2>
+                            <p class="text-xs text-slate-400">Pilihlah semua perlengkapan wajib dan buang barang yang melanggar aturan sebelum melaju.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-2">
+                            <!-- Left Rack Preview Visual -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-4 flex flex-col justify-between min-h-[250px]">
+                                <div id="gearVisualChar" class="text-7xl">👤</div>
+                                <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800/80 text-left w-full">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Checklist Kelayakan Anda:</p>
+                                    <div id="gearSelectedChecklist" class="space-y-1 max-h-32 overflow-y-auto custom-scrollbar text-xs">
+                                        <p class="text-slate-500 italic text-[11px]">Belum melengkapi barang...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Item Rack List -->
+                            <div class="space-y-2">
+                              <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Pilih Item dari Rak:</p>
+                              <div id="gearContainer" class="space-y-2">
+                                  <!-- Dynamic content depending on selected vehicle -->
+                              </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-between border-t border-slate-800">
+                            <button onclick="backToStep1()" class="px-4 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 font-bold rounded-xl text-slate-300 text-xs">Kembali</button>
+                            <button onclick="startRoadSimulation()" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold rounded-xl text-white text-xs shadow-md shadow-blue-500/15">Nyalakan Mesin & Jalan</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: ROAD SIMULATOR GAMEPLAY SCREEN (TOP DOWN CANVAS) -->
+                    <div id="sim-step-3" class="hidden space-y-4">
+                        <!-- Gameplay Stats HUD -->
+                        <div class="grid grid-cols-3 gap-3 bg-slate-900 p-4 rounded-2xl border border-slate-800 text-center text-xs">
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider font-bold">Skor Live</p>
+                                <p id="liveScoreText" class="text-lg font-black text-emerald-400 font-mono">100</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider font-bold">Lampu Rambu</p>
+                                <p id="engineStatus" class="text-sm font-black text-emerald-400 flex items-center justify-center gap-1">🟢 HIJAU</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider font-bold">Kecepatan</p>
+                                <p id="speedText" class="text-lg font-black text-white font-mono">0 <span class="text-[10px] text-slate-400">km/h</span></p>
+                            </div>
+                        </div>
+
+                        <!-- 2D TOP DOWN DRIVING GRAPHICS CANVAS -->
+                        <div class="relative w-full max-w-sm mx-auto rounded-2xl border-2 border-slate-800 overflow-hidden shadow-2xl bg-slate-950 flex flex-col items-center">
+                            <canvas id="roadCanvas" width="360" height="420" class="w-full h-auto block"></canvas>
+                            
+                            <!-- Overlay Rambu & Peringatan -->
+                            <div id="scenarioIndicator" class="absolute top-3 left-1/2 transform -translate-x-1/2 bg-slate-900/90 px-4 py-1.5 border border-slate-700/60 rounded-full text-[11px] text-slate-200 flex items-center gap-2 shadow-xl backdrop-blur-sm whitespace-nowrap">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                                <span id="indicatorMessage">Berkendara dengan Etika & Disiplin</span>
+                            </div>
+
+                            <!-- Game Over / Crash Splash -->
+                            <div id="gameCrashSplash" class="hidden absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center space-y-3 p-4 text-center z-20">
+                                <div class="text-5xl animate-bounce">💥</div>
+                                <h3 class="text-lg font-black text-rose-500 font-montserrat uppercase">TERJADI TABRAKAN FATAL!</h3>
+                                <p class="text-xs text-slate-300">Anda mengalami benturan keras dengan rintangan atau kendaraan lain di persimpangan jalan raya. Selalu jaga jarak aman.</p>
+                                <button onclick="finishSimAndEvaluate()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl text-xs text-white shadow-md">Lihat Rapor Mengemudi</button>
+                            </div>
+                        </div>
+
+                        <!-- CONTROLS & WEB AUDIO ACTIONS -->
+                        <div class="space-y-3">
+                            <p class="text-[10px] text-slate-400 text-center font-bold uppercase tracking-wider font-semibold">Tekan GAS sekali untuk jalan, tekan kembali untuk menambah kecepatan secara konstan:</p>
+                            
+                            <!-- On-screen Interactive Touch D-pad -->
+                            <div class="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+                                <div></div>
+                                <button onclick="pressGas()" class="p-3 bg-slate-800 hover:bg-slate-700 active:bg-blue-600 border border-slate-750 text-white font-bold rounded-xl flex flex-col items-center justify-center text-xs select-none shadow-md">
+                                    <i data-lucide="chevrons-up" class="w-4 h-4 mb-0.5 text-blue-400 animate-bounce"></i> GAS (⬆️)
+                                </button>
+                                <div></div>
+                                
+                                <button onmousedown="steerControl(-1)" onmouseup="steerControl(0)" ontouchstart="steerControl(-1)" ontouchend="steerControl(0)" class="p-3 bg-slate-800 hover:bg-slate-700 active:bg-blue-600 border border-slate-750 text-white font-bold rounded-xl flex flex-col items-center justify-center text-xs select-none shadow-md">
+                                    <i data-lucide="chevron-left" class="w-4 h-4 mb-0.5 text-blue-400"></i> KIRI (⬅️)
+                                </button>
+                                <button onclick="pressBrake()" class="p-3 bg-slate-800 hover:bg-slate-700 active:bg-red-600 border border-slate-750 text-white font-bold rounded-xl flex flex-col items-center justify-center text-xs select-none shadow-md">
+                                    <i data-lucide="chevrons-down" class="w-4 h-4 mb-0.5 text-red-400"></i> REM (⬇️)
+                                </button>
+                                <button onmousedown="steerControl(1)" onmouseup="steerControl(0)" ontouchstart="steerControl(1)" ontouchend="steerControl(0)" class="p-3 bg-slate-800 hover:bg-slate-700 active:bg-blue-600 border border-slate-750 text-white font-bold rounded-xl flex flex-col items-center justify-center text-xs select-none shadow-md">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 mb-0.5 text-blue-400"></i> KANAN (➡️)
+                                </button>
+                            </div>
+
+                            <div class="flex items-center justify-center gap-3 pt-2">
+                                <button onclick="triggerSynthHonk()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 flex items-center gap-1.5 shadow-md">
+                                    <i data-lucide="bell" class="w-4 h-4 text-amber-400"></i> KLAKSON SYNTH
+                                </button>
+                                <button onclick="finishSimAndEvaluate()" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 border border-rose-700 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
+                                    <i data-lucide="square" class="w-4 h-4"></i> SELESAI & NILAI
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: SCORE SHEET EVALUATION -->
+                    <div id="sim-step-4" class="hidden space-y-6 animate-fadeIn text-center">
+                        <p class="text-[10px] uppercase font-extrabold tracking-widest text-slate-400">Rapor Evaluasi Akhir</p>
+                        <div class="inline-block p-6 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl">
+                            <p class="text-xs font-bold text-slate-400 mb-0.5">SKOR KEPATUHAN BERKENDARA</p>
+                            <h1 id="finalScoreDisplay" class="text-5xl font-black text-emerald-400 font-mono">100</h1>
+                        </div>
+
+                        <div class="max-w-md mx-auto p-3 rounded-xl text-xs font-bold" id="complianceBanner">
+                            Status Kelayakan: Memuat...
+                        </div>
+
+                        <!-- Breakdown compliance and violations -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left pt-2">
+                            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-inner">
+                                <h4 class="text-xs font-black text-emerald-400 flex items-center gap-1.5">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i> Hal yang Anda Patuhi:
+                                </h4>
+                                <ul id="complianceList" class="space-y-1.5 text-xs text-slate-300">
+                                    <!-- compliant items -->
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-inner">
+                                <h4 class="text-xs font-black text-rose-400 flex items-center gap-1.5">
+                                    <i data-lucide="x-circle" class="w-4 h-4"></i> Pelanggaran yang Dilakukan:
+                                </h4>
+                                <ul id="violationList" class="space-y-1.5 text-xs text-rose-300/80">
+                                    <!-- violation items -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex flex-wrap gap-3 justify-center border-t border-slate-800">
+                            <button onclick="startSimulationFlow()" class="px-5 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Main Lagi
+                            </button>
+                            <button onclick="openEvalModalDetail()" class="px-5 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                                <i data-lucide="eye" class="w-4 h-4"></i> Lihat Rapor Detail
+                            </button>
+                            <button onclick="shareScoreToForum()" class="px-5 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                                <i data-lucide="share-2" class="w-4 h-4"></i> Bagikan ke Forum
+                            </button>
+                            <button onclick="finishSimulationSession()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black tracking-wide shadow-md">
+                                Klaim Poin Global
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==========================================
+                VIEW 3: AI CERDAS ASSIST (GANTI FORUM)
+               ========================================== -->
+            <section id="view-forum" class="hidden space-y-6 animate-fadeIn">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-white font-montserrat flex items-center gap-2">
+                            <i data-lucide="cpu" class="text-amber-500 w-7 h-7"></i> TRABOT - Asisten AI Cerdas
+                        </h2>
+                        <p class="text-xs text-slate-400">Tanyakan apapun tentang peraturan, rambu lalu lintas, dan etika jalan raya kepada robot AI TRAXI.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    <!-- PRE-SET POPULAR QUESTIONS FOR KIDS -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i> Rekomendasi Pertanyaan
+                        </h3>
+                        <div class="flex flex-col gap-2.5 text-xs text-slate-300">
+                            <button onclick="askPresetQuestion('Mengapa kita wajib memakai helm SNI?')" class="p-3 bg-slate-900 hover:bg-slate-850 hover:text-white rounded-xl border border-slate-800/80 text-left transition duration-200">
+                                🛵 Mengapa kita wajib memakai helm SNI?
+                            </button>
+                            <button onclick="askPresetQuestion('Apa arti rambu warna biru dibanding kuning?')" class="p-3 bg-slate-900 hover:bg-slate-850 hover:text-white rounded-xl border border-slate-800/80 text-left transition duration-200">
+                                🔷 Apa arti rambu warna biru dibanding kuning?
+                            </button>
+                            <button onclick="askPresetQuestion('Kapan kita boleh menyeberang di zebra cross?')" class="p-3 bg-slate-900 hover:bg-slate-850 hover:text-white rounded-xl border border-slate-800/80 text-left transition duration-200">
+                                🚶 Kapan kita boleh menyeberang di zebra cross?
+                            </button>
+                            <button onclick="askPresetQuestion('Bagaimana menghitung emisi karbon bensin?')" class="p-3 bg-slate-900 hover:bg-slate-850 hover:text-white rounded-xl border border-slate-800/80 text-left transition duration-200">
+                                🌳 Bagaimana menghitung emisi karbon bensin?
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI CHAT WINDOW interface -->
+                    <div class="lg:col-span-2 bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col h-[500px]">
+                        <!-- Conversation Log -->
+                        <div id="aiChatLog" class="flex-1 overflow-y-auto space-y-4 p-2 custom-scrollbar text-xs">
+                            <!-- Bot Message -->
+                            <div class="flex items-start gap-2.5 max-w-[85%]">
+                                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-blue-600 flex items-center justify-center shrink-0">
+                                    <i data-lucide="cpu" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl rounded-tl-none space-y-1.5">
+                                    <p class="font-bold text-amber-400">TRABOT (TRAXI AI)</p>
+                                    <p class="text-slate-300 leading-relaxed">
+                                        Halo sahabat muda! Aku **TRABOT**, robot asisten cerdas yang tahu semua aturan lalu lintas Indonesia. Tuliskan apa pun yang ingin kamu ketahui atau klik salah satu rekomendasi pertanyaan di samping!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Typing Loading (Hidden initially) -->
+                        <div id="aiChatTyping" class="hidden flex items-center gap-2 px-3 py-1.5 text-[11px] text-slate-500">
+                            <span class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"></span>
+                            <span class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                            <span class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                            <span>TRABOT sedang memikirkan jawaban aman untukmu...</span>
+                        </div>
+
+                        <!-- Input Bar -->
+                        <div class="mt-4 pt-3 border-t border-slate-900 flex gap-2">
+                            <input id="aiChatInput" onkeydown="handleAiChatKey(event)" type="text" placeholder="Tanyakan seputar rambu, marka, atau emisi kendaraan..." class="flex-1 bg-slate-900 border border-slate-800 focus:border-blue-500 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none" />
+                            <button onclick="sendAiChatMessage()" class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition shadow-lg shadow-blue-600/10">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==========================================
+                VIEW 4: INTERACTIVE EDUCATION CORNER & CASE QUIZ
+               ========================================== -->
+            <section id="view-edukasi" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-black text-white font-montserrat">Perpustakaan Digital & Edukasi Keselamatan</h2>
+                    <p class="text-xs text-slate-400">Pahami aturan, ketahui dampak pelanggaran lalu lintas, dan ikuti uji kasus praktis di bawah ini.</p>
+                </div>
+
+                <!-- IMPACTS OF NOT OBEYING TRAFFIC RULES -->
+                <div class="bg-gradient-to-r from-red-950/30 via-slate-950 to-slate-950 border border-red-500/20 rounded-3xl p-6 space-y-4">
+                    <h3 class="text-md font-bold text-red-400 flex items-center gap-2">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500 animate-pulse"></i> Dampak Fatal Melanggar Aturan Lalu Lintas
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 space-y-2">
+                            <h4 class="font-bold text-white flex items-center gap-1.5"><span class="text-red-500">1.</span> Risiko Cedera & Korban Jiwa</h4>
+                            <p class="text-slate-400 leading-relaxed">
+                                Kecepatan tinggi, abai rambu, dan kelalaian perlengkapan (seperti helm atau sabuk pengaman) merupakan pemicu utama kecelakaan fatal yang mengancam nyawa kita dan orang lain.
+                            </p>
+                        </div>
+                        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 space-y-2">
+                            <h4 class="font-bold text-white flex items-center gap-1.5"><span class="text-red-500">2.</span> Konsekuensi Hukum & Finansial</h4>
+                            <p class="text-slate-400 leading-relaxed">
+                                Pelanggaran berujung pada denda tilang yang mahal, pencabutan hak mengemudi (SIM), hingga jeruji penjara jika kelalaian menyebabkan luka fisik pada pengguna jalan lain.
+                            </p>
+                        </div>
+                        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 space-y-2">
+                            <h4 class="font-bold text-white flex items-center gap-1.5"><span class="text-red-500">3.</span> Kemacetan & Kerugian Publik</h4>
+                            <p class="text-slate-400 leading-relaxed">
+                                Satu pelanggaran kecil seperti menerobos persimpangan atau parkir sembarangan memicu kemacetan sistemik yang merugikan produktivitas dan waktu berharga ribuan orang.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10 QUESTIONS DECISION-MAKING QUIZ -->
+                <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 space-y-4">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <h3 class="text-md font-bold text-white flex items-center gap-2">
+                            <i data-lucide="help-circle" class="text-amber-500 w-5 h-5"></i> Tes Kualifikasi: 10 Kasus Mengemudi Aman
+                        </h3>
+                        <span id="quizBadgeStatus" class="text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full">Belum Memulai</span>
+                    </div>
+
+                    <!-- Quiz Play Screen Box -->
+                    <div id="quizBoxPlay" class="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4">
+                        <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800/60 pb-2">
+                            <span id="quizProgressTracker">Soal 1 dari 10</span>
+                            <span id="quizScoreTracker" class="font-mono">Poin: 0</span>
+                        </div>
+                        
+                        <div class="space-y-1.5">
+                            <span class="text-[10px] text-amber-500 font-extrabold uppercase tracking-widest">Skenario Kasus</span>
+                            <p id="quizQuestionText" class="text-sm font-semibold text-white leading-relaxed">Pertanyaan kasus dimuat di sini...</p>
+                        </div>
+
+                        <div id="quizOptionsContainer" class="grid grid-cols-1 gap-2.5 pt-2">
+                            <!-- Dynamic answers -->
+                        </div>
+                    </div>
+
+                    <!-- Quiz Result Splash Box -->
+                    <div id="quizBoxResult" class="hidden bg-slate-900 rounded-2xl p-6 border border-emerald-500/20 text-center space-y-4">
+                        <div class="text-5xl animate-bounce">🏆</div>
+                        <h4 class="text-lg font-black text-white font-montserrat uppercase">Hasil Kuis Kualifikasi</h4>
+                        <p id="quizResultScoreText" class="text-sm text-slate-300">Skor Anda: 0 / 100 Poin</p>
+                        <p id="quizResultEvaluasiText" class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">Analisis kelayakan dasar Anda.</p>
+                        <button onclick="restartKuisKasus()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white shadow-md">Ulangi Uji Kasus</button>
+                    </div>
+                </div>
+
+                <!-- CARDS GRID CATEGORIES -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="p-5 rounded-2xl border border-rose-500/30 bg-rose-950/10 flex flex-col justify-between space-y-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-bold text-white">Rambu Larangan</h4>
+                                <span class="text-[9px] bg-slate-900 border border-slate-700 font-bold px-1.5 py-0.5 rounded text-slate-300">Merah</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Berisi batasan, larangan masuk, atau parkir. Contoh: Rambu dilarang belok kanan, dilarang masuk.</p>
+                        </div>
+                        <button onclick="showEduAlert('Larangan')" class="text-xs text-slate-300 font-bold hover:underline text-left inline-flex items-center gap-0.5">Uji Rambu Larangan <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                    </div>
+
+                    <div class="p-5 rounded-2xl border border-blue-500/30 bg-blue-950/10 flex flex-col justify-between space-y-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-bold text-white">Rambu Perintah</h4>
+                                <span class="text-[9px] bg-slate-900 border border-slate-700 font-bold px-1.5 py-0.5 rounded text-slate-300">Biru</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Berisi instruksi wajib bagi pengendara. Contoh: Wajib mengikuti arah bundaran, wajib lajur kiri.</p>
+                        </div>
+                        <button onclick="showEduAlert('Perintah')" class="text-xs text-slate-300 font-bold hover:underline text-left inline-flex items-center gap-0.5">Uji Rambu Perintah <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                    </div>
+
+                    <div class="p-5 rounded-2xl border border-amber-500/30 bg-amber-950/10 flex flex-col justify-between space-y-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-bold text-white">Rambu Peringatan</h4>
+                                <span class="text-[9px] bg-slate-900 border border-slate-700 font-bold px-1.5 py-0.5 rounded text-slate-300">Kuning</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Mengingatkan potensi bahaya di depan jalan. Contoh: Tikungan tajam ke kanan, permukaan jalan licin.</p>
+                        </div>
+                        <button onclick="showEduAlert('Peringatan')" class="text-xs text-slate-300 font-bold hover:underline text-left inline-flex items-center gap-0.5">Uji Rambu Peringatan <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                    </div>
+
+                    <div class="p-5 rounded-2xl border border-emerald-500/30 bg-emerald-950/10 flex flex-col justify-between space-y-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-bold text-white">Rambu Petunjuk</h4>
+                                <span class="text-[9px] bg-slate-900 border border-slate-700 font-bold px-1.5 py-0.5 rounded text-slate-300">Hijau</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Menunjukkan arah kota, lokasi penting, fasilitas umum, jarak tempuh rute perjalanan.</p>
+                        </div>
+                        <button onclick="showEduAlert('Petunjuk')" class="text-xs text-slate-300 font-bold hover:underline text-left inline-flex items-center gap-0.5">Uji Rambu Petunjuk <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==========================================
+                VIEW 5: ADMIN & CONTROLLER CONTROL PANEL (PASSWORD LOCKED)
+               ========================================== -->
+            <section id="view-admin" class="hidden space-y-6">
+                <!-- PASSWORD LOCKED CARD -->
+                <div id="adminPasswordGate" class="max-w-md mx-auto bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-fadeIn text-center">
+                    <div class="p-3 bg-red-500/10 rounded-full text-red-500 border border-red-500/20 inline-flex">
+                        <i data-lucide="lock" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-md font-bold text-white font-montserrat uppercase">Akses Terbatas: Masukkan PIN</h3>
+                    <p class="text-xs text-slate-400">Konfigurasi TRAXI dilindungi sandi untuk menjaga keaslian data evaluasi.</p>
+                    <div class="space-y-3">
+                        <input id="adminPinInput" type="password" placeholder="Masukkan 6-Digit PIN Admin..." class="w-full bg-slate-900 border border-slate-800 focus:border-red-500 rounded-xl px-4 py-3 text-center text-sm font-black focus:outline-none tracking-widest text-white transition" />
+                        <button onclick="unlockAdminPanel()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs uppercase transition shadow-lg shadow-red-600/15">
+                            Verifikasi PIN & Buka Akses
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MAIN ADMIN INTERFACE (HIDDEN BY DEFAULT) -->
+                <div id="adminMainContent" class="hidden space-y-6 animate-fadeIn">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-emerald-400 text-xs font-black flex items-center gap-1">🔓 AKSES DIIZINKAN</span>
+                        </div>
+                        <button onclick="lockAdminPanelBack()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold rounded-lg text-xs flex items-center gap-1.5 transition">
+                            <i data-lucide="lock" class="w-3.5 h-3.5"></i> Kunci Kembali
+                        </button>
+                    </div>
+
+                    <!-- LOGISTICS STATISTICS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-slate-950 p-4 border border-slate-800 rounded-2xl shadow-lg">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total User Simulasi</p>
+                            <h2 class="text-2xl font-black text-white mt-1">1,482 <span class="text-xs text-emerald-400 font-normal font-mono">+12%</span></h2>
+                        </div>
+                        <div class="bg-slate-950 p-4 border border-slate-800 rounded-2xl shadow-lg">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tingkat Kelayakan SIM</p>
+                            <h2 class="text-2xl font-black text-emerald-400 mt-1 font-mono">74.2%</h2>
+                        </div>
+                        <div class="bg-slate-950 p-4 border border-slate-800 rounded-2xl shadow-lg">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pelanggaran Terbanyak</p>
+                            <h2 class="text-xs font-bold text-amber-400 mt-2 truncate">Menerobos Lampu Merah</h2>
+                        </div>
+                        <div class="bg-slate-950 p-4 border border-slate-800 rounded-2xl shadow-lg">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Aduan Postingan</p>
+                            <h2 class="text-2xl font-black text-rose-500 mt-1">0 <span class="text-xs text-slate-500 font-normal font-mono">Bersih</span></h2>
+                        </div>
+                    </div>
+
+                    <!-- LIVE CONFIGURATOR -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <!-- PARAMETER CONFIGURATOR -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            <h3 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                                <i data-lucide="sliders" class="w-4 h-4 text-amber-400"></i> Aturan & Parameter Penalti
+                            </h3>
+                            <div class="space-y-4 text-xs">
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="font-bold text-slate-400">Besar Denda Poin Penalti</label>
+                                        <span id="adminPenaltyBadge" class="font-mono bg-rose-950 text-rose-400 px-2 py-0.5 rounded border border-rose-900 font-bold">-40 Pts</span>
+                                    </div>
+                                    <input type="range" id="adminPenaltyRange" min="10" max="100" step="5" value="40" oninput="updateAdminParams()" class="w-full accent-blue-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="font-bold text-slate-400">Batas Lulus Skor Minimal</label>
+                                        <span id="adminPassingBadge" class="font-mono bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded border border-emerald-900 font-bold">70 Pts</span>
+                                    </div>
+                                    <input type="range" id="adminPassingRange" min="50" max="95" step="5" value="70" oninput="updateAdminParams()" class="w-full accent-blue-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
+                                </div>
+
+                                <button onclick="saveAdminConfig()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
+                                    Simpan Aturan Global
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- MODERATION QUEUE -->
+                        <div class="lg:col-span-2 bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            <div class="flex justify-between items-center flex-wrap gap-2">
+                                <h3 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="eye" class="w-4 h-4 text-blue-400"></i> Antrean Moderasi Log Aktivitas
+                                </h3>
+                                <button onclick="showToast('Sistem', 'Data laporan berhasil diekspor!', 'success')" class="text-[10px] font-bold text-slate-300 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg hover:bg-slate-850 flex items-center gap-1">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Ekspor CSV
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto custom-scrollbar">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-slate-800 text-slate-400 font-bold bg-slate-900/50">
+                                            <th class="p-3">Sesi Pengguna</th>
+                                            <th class="p-3">Skenario Kecepatan</th>
+                                            <th class="p-3">Rapor Medali</th>
+                                            <th class="p-3 text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminModerationTable">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER INFORMASI -->
+        <footer class="bg-slate-950 border-t border-slate-800/80 py-6 px-6 text-center text-xs text-slate-500 mt-auto">
+            <p class="font-montserrat font-bold text-slate-400 mb-1">TRAXI &copy; 2026</p>
+            <p>Traffic & Experience Interactive • Program Edukasi Keselamatan Mengemudi Menyenangkan Bagi Remaja Indonesia.</p>
+        </footer>
+    </div>
+
+    <!-- ==========================================
+        WEB APPLICATION CORE JAVASCRIPT
+       ========================================== -->
+    <script>
+        // --- WEB AUDIO SYNTHESIZER ENGINE ---
+        class TRAXISoundGenerator {
+            constructor() {
+                this.audioCtx = null;
+                this.engineOsc = null;
+                this.engineGain = null;
+            }
+
+            init() {
+                if (!this.audioCtx) {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+            }
+
+            playHonk() {
+                this.init();
+                const now = this.audioCtx.currentTime;
+                const osc1 = this.audioCtx.createOscillator();
+                const osc2 = this.audioCtx.createOscillator();
+                const gainNode = this.audioCtx.createGain();
+
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(440, now); // A4
+                osc2.type = 'sawtooth';
+                osc2.frequency.setValueAtTime(392, now); // G4
+
+                gainNode.gain.setValueAtTime(0.12, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+                osc1.connect(gainNode);
+                osc2.connect(gainNode);
+                gainNode.connect(this.audioCtx.destination);
+
+                osc1.start();
+                osc2.start();
+                osc1.stop(now + 0.3);
+                osc2.stop(now + 0.3);
+            }
+
+            startEngine() {
+                this.init();
+                if (this.engineOsc) return;
+
+                const now = this.audioCtx.currentTime;
+                this.engineOsc = this.audioCtx.createOscillator();
+                this.engineGain = this.audioCtx.createGain();
+
+                this.engineOsc.type = 'triangle';
+                this.engineOsc.frequency.setValueAtTime(50, now);
+
+                const filter = this.audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(140, now);
+
+                this.engineGain.gain.setValueAtTime(0.12, now);
+
+                this.engineOsc.connect(filter);
+                filter.connect(this.engineGain);
+                this.engineGain.connect(this.audioCtx.destination);
+
+                this.engineOsc.start();
+            }
+
+            updateEngineSpeed(speedRatio) {
+                if (!this.engineOsc || !this.audioCtx) return;
+                const now = this.audioCtx.currentTime;
+                const targetFreq = 50 + (speedRatio * 65); 
+                this.engineOsc.frequency.setTargetAtTime(targetFreq, now, 0.1);
+            }
+
+            stopEngine() {
+                if (this.engineOsc) {
+                    try {
+                        this.engineOsc.stop();
+                    } catch(e) {}
+                    this.engineOsc = null;
+                }
+            }
+
+            playPointUp() {
+                this.init();
+                const now = this.audioCtx.currentTime;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.2); // C6
+
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+                osc.start();
+                osc.stop(now + 0.2);
+            }
+
+            playBrakes() {
+                this.init();
+                const now = this.audioCtx.currentTime;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.3);
+
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.linearRampToValueAtTime(0.0, now + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            }
+
+            playAlertAlarm() {
+                this.init();
+                const now = this.audioCtx.currentTime;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.setValueAtTime(600, now + 0.1);
+
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+                osc.start();
+                osc.stop(now + 0.25);
+            }
+
+            playCrashSound() {
+                this.init();
+                const now = this.audioCtx.currentTime;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, now);
+                osc.frequency.linearRampToValueAtTime(10, now + 0.6);
+
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+                osc.start();
+                osc.stop(now + 0.6);
+            }
+        }
+
+        const audioSynth = new TRAXISoundGenerator();
+
+        // --- CONSTANTS & STATE VARIABLES ---
+        let currentView = 'login';
+        let globalPoints = 1250;
+        let globalLevel = 5;
+        let penaltyPointsValue = 40;
+        let minPassingScore = 70;
+
+        let currentUser = {
+            username: 'Ksatria_Jalanan',
+            avatar: '👤'
+        };
+
+        // Stepper State
+        let selectedVehicleType = 'motor';
+        let selectedGears = [];
+        let simulationScore = 100;
+        let complianceLogs = [];
+        let violationLogs = [];
+
+        // Keyboard System (Continuous key detection)
+        let keysPressed = {};
+
+        // Game Controls State
+        let isSimulationRunning = false;
+        let animationFrameId = null;
+        let lastTime = 0;
+        let roadY = 0;
+        let junctionY = -500;
+        
+        // Player properties
+        let playerCar = {
+            x: 165,
+            y: 330,
+            width: 30,
+            height: 50,
+            speed: 0,
+            maxSpeed: 4.5,
+            accel: 0.9,     // Step acceleration increment
+            decel: 1.0,     // Step deceleration increment
+            steerSpeed: 3.5,
+            steerDir: 0
+        };
+
+        // Road entities & buildings
+        let entities = [];
+        let buildings = [];
+        let trafficLight = {
+            y: -500,
+            state: 'HIJAU',
+            timer: 0,
+            active: false
+        };
+
+        const BUILDING_TYPES = [
+            { emoji: '🏥', label: 'Rumah Sakit' },
+            { emoji: '🏫', label: 'Sekolah' },
+            { emoji: '🏪', label: 'Pasar Raya' },
+            { emoji: '🏢', label: 'Perusahaan' },
+            { emoji: '🏠', label: 'Pemukiman' }
+        ];
+
+        // Custom gear list
+        const GEAR_DATA = {
+            motor: [
+                { id: 'm1', name: 'Helm Full Face SNI', safe: true, info: 'Melindungi kepala secara menyeluruh.' },
+                { id: 'm2', name: 'Helm Proyek Mainan', safe: false, info: 'Tidak berstandar keselamatan aspal.' },
+                { id: 'm3', name: 'Jaket Tebal & Sarung Tangan', safe: true, info: 'Mencegah luka gesekan jika terjatuh.' },
+                { id: 'm4', name: 'Sandal Jepit Tipis', safe: false, info: 'Sangat rawan cedera kaki akibat aspal panas.' },
+                { id: 'm5', name: 'Sepatu Sport Tertutup', safe: true, info: 'Melindungi kaki secara optimal.' }
+            ],
+            mobil: [
+                { id: 'c1', name: 'Pasang Sabuk Pengaman', safe: true, info: 'Wajib dipasang untuk meredam guncangan.' },
+                { id: 'c2', name: 'Atur Kaca Spion', safe: true, info: 'Meminimalisir sudut buta (blindspot).' },
+                { id: 'c3', name: 'Ponsel Hack di Dasbor', safe: false, info: 'Distraksi berbahaya pemicu kecelakaan.' },
+                { id: 'c4', name: 'Memeriksa Rem Tangan', safe: true, info: 'Memastikan tuas pengaman sudah dilepas.' }
+            ],
+            sepeda: [
+                { id: 'b1', name: 'Helm Khusus Sepeda', safe: true, info: 'Ringan namun kokoh melindungi kepala.' },
+                { id: 'b2', name: 'Lampu Belakang Menyala', safe: true, info: 'Meningkatkan keterlihatan di malam hari.' },
+                { id: 'b3', name: 'Sepeda Tanpa Rem (Fixie)', safe: false, info: 'Sangat membahayakan di turunan curam.' }
+            ]
+        };
+
+        // 10 Questions Case Quiz Data
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        const QUIZ_QUESTIONS = [
+            {
+                q: "Anda mengendarai motor mendekati zebra cross, lampu lalu lintas menyala MERAH dan ada pejalan kaki bersiap menyeberang. Tindakan Anda?",
+                options: [
+                    { text: "Berhenti total di belakang garis henti persimpangan secara aman", correct: true, points: 10 },
+                    { text: "Membunyikan klakson agar pejalan kaki berhenti lalu Anda tancap gas", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Di depan area persimpangan yang cukup ramai tanpa lampu lalu lintas, ada mobil yang sudah masuk persimpangan terlebih dahulu. Etika tindakan Anda?",
+                options: [
+                    { text: "Mengurangi kecepatan secara bijak untuk memberi kesempatan mobil tersebut melintas terlebih dahulu", correct: true, points: 10 },
+                    { text: "Mempercepat laju kendaraan untuk mendahuluinya agar tidak mengantre", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Anda melihat lubang cukup besar di depan lajur Anda saat berkendara secara konstan. Apa keputusan terbaik?",
+                options: [
+                    { text: "Periksa keadaan kaca spion kiri-kanan, perlambat laju, lalu hindari lubang dengan aman", correct: true, points: 10 },
+                    { text: "Langsung membanting setir mendadak tanpa melihat kendaraan lain di sekitar", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Sebuah mobil pemadam kebakaran menyalakan sirine kencang di belakang kendaraan Anda. Tindakan paling etis?",
+                options: [
+                    { text: "Segera menepi secara perlahan ke lajur kiri and memberikan jalan prioritas utama", correct: true, points: 10 },
+                    { text: "Tetap berada di tengah jalan dan merekam dengan ponsel Anda", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Teman Anda mengajak pergi ke minimarket terdekat naik motor tanpa memakai helm karena jaraknya hanya 200 meter. Respon Anda?",
+                options: [
+                    { text: "Menolak dengan sopan dan bersikeras memakai helm SNI demi perlindungan mutlak kepala", correct: true, points: 10 },
+                    { text: "Ikut pergi saja karena jaraknya dekat dan tidak ada polisi", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Lampu kuning lalu lintas menyala saat posisi kendaraan Anda masih cukup jauh dari garis henti. Tindakan Anda?",
+                options: [
+                    { text: "Mengurangi kecepatan secara bertahap dan bersiap berhenti total sebelum garis", correct: true, points: 10 },
+                    { text: "Menambah gas sekencang mungkin agar terbebas dari lampu merah", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Menemukan jalanan yang sangat tergenang air banjir setinggi trotoar akibat hujan lebat. Tindakan paling aman?",
+                options: [
+                    { text: "Menepi di tempat aman atau berputar mencari rute alternatif yang kering", correct: true, points: 10 },
+                    { text: "Menerjang genangan dengan kecepatan tinggi agar cepat sampai", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Anda hendak berbelok ke kiri di persimpangan jalan umum. Kapan sebaiknya menyalakan lampu isyarat sen?",
+                options: [
+                    { text: "Menyalakan sen sekitar 30 meter sebelum persimpangan secara tenang", correct: true, points: 10 },
+                    { text: "Menyalakan sen saat setir sudah dibelokkan di persimpangan", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Anda melihat rambu tanda larangan parkir (huruf P dicoret), namun ingin membeli air minum di warung terdekat 1 menit. Tindakan?",
+                options: [
+                    { text: "Mencari kantong parkir resmi dan berjalan kaki sedikit ke warung", correct: true, points: 10 },
+                    { text: "Tetap parkir di bawah rambu karena merasa hanya sebentar", correct: false, points: 0 }
+                ]
+            },
+            {
+                q: "Saat melintasi area bundaran padat kendaraan. Siapa yang wajib didahulukan berdasarkan hukum?",
+                options: [
+                    { text: "Mendahulukan kendaraan yang sudah berada di dalam bundaran terlebih dahulu", correct: true, points: 10 },
+                    { text: "Menyerobot masuk agar kendaraan lain mengalah", correct: false, points: 0 }
+                ]
+            }
+        ];
+
+        // --- TRABOT AI SMART MOCK LOGIC ---
+        const TRABOT_RESPONSES = [
+            { keywords: ["helm", "sni", "kepala"], ans: "Memakai helm SNI (Standar Nasional Indonesia) sangat penting karena helm dirancang menyerap benturan keras pada aspal saat kita terjatuh. Tanpa helm, cedera kepala bisa berakibat fatal bahkan untuk jarak berkendara dekat sekalipun!" },
+            { keywords: ["kuning", "biru", "rambu"], ans: "Ingat prinsip warna rambu ini ya: \n🟡 **Kuning** = Peringatan (misal ada tikungan tajam).\n🔵 **Biru** = Perintah wajib (misal wajib belok kiri).\n🔴 **Merah** = Larangan keras (misal dilarang masuk/stop).\n🟢 **Hijau** = Petunjuk jalan/kota." },
+            { keywords: ["zebra", "menyeberang", "jalan"], ans: "Zebra cross diletakkan di persimpangan atau depan fasilitas umum agar pejalan kaki menyeberang dengan aman. Sebagai pengendara, kita **harus berhenti total** di belakang garis putih ketika pejalan kaki sedang melintas, terutama saat lampu menyala MERAH!" },
+            { keywords: ["emisi", "karbon", "co2", "bensin"], ans: "Bensin yang dibakar mesin menghasilkan gas karbon dioksida ($CO_2$) penyebab pemanasan global. Rata-rata motor menghasilkan 80 gram $CO_2$/km, sedangkan mobil sedan mencapai 120 gram $CO_2$/km. Menggunakan sepeda atau berjalan kaki menghasilkan **0 gram emisi**, sangat sehat untuk bumi kita!" },
+            { keywords: ["lampu", "merah", "hijau"], ans: "Lampu lalu lintas menjaga ketertiban persimpangan jalan agar tidak macet dan bertabrakan. Merah artinya Berhenti (Stop), Kuning artinya Bersiap/Hati-hati, dan Hijau artinya Boleh Melaju jika kondisi jalan aman!" },
+            { keywords: ["kecepatan", "ngebut", "maksimal"], ans: "Batas kecepatan dibuat untuk keselamatan. Di area perumahan dan sekolah, kecepatan maksimal hanya 20-30 km/jam karena banyak penyeberang anak-anak. Menjaga kecepatan juga memberi ruang respons pengereman darurat yang aman." },
+            { keywords: ["spion", "kaca"], ans: "Kaca spion berfungsi memantau keadaan lalu lintas di samping dan belakang kendaraan kita tanpa perlu memutar badan. Selalu setel spion kanan dan kiri untuk menghilangkan area *blindspot* sebelum mulai berkendara." }
+        ];
+
+        // --- LOGIN ENGINE ---
+        function performLogin() {
+            const usernameInput = document.getElementById('loginUsername').value.trim();
+            const pledge = document.getElementById('pledgeCheckbox').checked;
+
+            if (!usernameInput) {
+                showToast('Gagal Masuk', 'Silakan tentukan nama panggilan karakter Anda.', 'error');
+                return;
+            }
+
+            if (!pledge) {
+                showToast('Komitmen Diperlukan', 'Harap setujui janji mengemudi aman sebelum masuk.', 'error');
+                return;
+            }
+
+            audioSynth.init();
+            currentUser.username = usernameInput;
+
+            document.getElementById('navUserProfileName').innerText = currentUser.username;
+            document.getElementById('dashboardUserNick').innerText = currentUser.username;
+
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('main-application').classList.remove('hidden');
+            document.getElementById('main-application').classList.add('flex');
+
+            switchView('dashboard');
+            initKuisKasus();
+            showToast('Masuk Berhasil', `Selamat datang di TRAXI, ${currentUser.username}!`, 'success');
+        }
+
+        // --- VIEWS ROUTING MANAGER ---
+        function switchView(viewName) {
+            if (currentView === 'simulasi' && viewName !== 'simulasi') {
+                stopTopDownSimulation();
+            }
+
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-simulasi').classList.add('hidden');
+            document.getElementById('view-forum').classList.add('hidden');
+            document.getElementById('view-edukasi').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+
+            const navs = ['dashboard', 'simulasi', 'edukasi', 'forum', 'admin'];
+            navs.forEach(n => {
+                const btn = document.getElementById(`nav-${n}`);
+                const mobBtn = document.getElementById(`mob-${n}`);
+                
+                if (n === viewName) {
+                    if (btn) btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-white bg-blue-600 shadow-md";
+                    if (mobBtn) mobBtn.className = "text-blue-400 font-bold";
+                } else {
+                    if (btn) {
+                        btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800";
+                        if (n === 'admin') btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-slate-500 hover:text-amber-400 hover:bg-slate-800";
+                    }
+                    if (mobBtn) mobBtn.className = "";
+                }
+            });
+
+            currentView = viewName;
+
+            if (viewName === 'forum') {
+                setTimeout(() => document.getElementById('aiChatInput').focus(), 100);
+            } else if (viewName === 'admin') {
+                document.getElementById('adminPasswordGate').classList.remove('hidden');
+                document.getElementById('adminMainContent').classList.add('hidden');
+                document.getElementById('adminPinInput').value = '';
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- ADMIN PASSWORD GATE LOCK/UNLOCK ---
+        function unlockAdminPanel() {
+            const pinVal = document.getElementById('adminPinInput').value.trim();
+            if (pinVal === '150110') {
+                audioSynth.playPointUp();
+                document.getElementById('adminPasswordGate').classList.add('hidden');
+                document.getElementById('adminMainContent').classList.remove('hidden');
+                renderAdminModeration();
+                showToast('Akses Admin', 'Verifikasi berhasil! Selamat bekerja.', 'success');
+            } else {
+                audioSynth.playAlertAlarm();
+                showToast('Akses Ditolak', 'PIN Salah! Hanya instruktur bersertifikasi yang diizinkan masuk.', 'error');
+            }
+        }
+
+        // Kunci panel admin
+        function lockAdminPanelBack() {
+            document.getElementById('adminPasswordGate').classList.remove('hidden');
+            document.getElementById('adminMainContent').classList.add('hidden');
+            document.getElementById('adminPinInput').value = '';
+            showToast('Sistem', 'Admin panel kembali dikunci.', 'info');
+        }
+
+        // --- TOAST NOTIFICATION UTILITY ---
+        function showToast(title, message, type = 'info') {
+            const toast = document.getElementById('toastNotification');
+            const tTitle = document.getElementById('toastTitle');
+            const tMsg = document.getElementById('toastMessage');
+            
+            tTitle.innerText = title;
+            tMsg.innerText = message;
+            
+            if (type === 'success') {
+                toast.className = "fixed top-20 right-4 z-50 transform transition-transform duration-300 bg-slate-950 border-l-4 border-emerald-500 text-slate-200 px-4 py-3 rounded-r-xl shadow-2xl flex items-center space-x-3 max-w-sm";
+                tTitle.className = "text-xs font-black uppercase tracking-wider text-emerald-400";
+            } else if (type === 'error') {
+                toast.className = "fixed top-20 right-4 z-50 transform transition-transform duration-300 bg-slate-950 border-l-4 border-rose-500 text-slate-200 px-4 py-3 rounded-r-xl shadow-2xl flex items-center space-x-3 max-w-sm animate-shake";
+                tTitle.className = "text-xs font-black uppercase tracking-wider text-rose-400";
+            } else {
+                toast.className = "fixed top-20 right-4 z-50 transform transition-transform duration-300 bg-slate-950 border-l-4 border-amber-500 text-slate-200 px-4 py-3 rounded-r-xl shadow-2xl flex items-center space-x-3 max-w-sm";
+                tTitle.className = "text-xs font-black uppercase tracking-wider text-amber-500";
+            }
+
+            toast.classList.remove('translate-x-96');
+            setTimeout(() => {
+                toast.classList.add('translate-x-96');
+            }, 3000);
+        }
+
+        // --- STEP 1: CHOOSE VEHICLE FLOW ---
+        function startSimulationFlow() {
+            switchView('simulasi');
+            selectedVehicleType = 'motor';
+            selectedGears = [];
+            simulationScore = 100;
+            complianceLogs = [];
+            violationLogs = [];
+            
+            const vehicles = ['motor', 'mobil', 'sepeda'];
+            vehicles.forEach(v => {
+                document.getElementById(`card-vehicle-${v}`).className = "cursor-pointer group relative p-5 rounded-2xl border-2 bg-slate-900 border-slate-800 hover:border-slate-700 transition flex flex-col justify-between space-y-4";
+                document.getElementById(`check-vehicle-${v}`).innerHTML = '';
+                document.getElementById(`check-vehicle-${v}`).className = "w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center font-bold text-white text-xs";
+            });
+
+            document.getElementById('btnContinueStep2').disabled = true;
+            document.getElementById('btnContinueStep2').className = "px-6 py-3 font-bold rounded-xl flex items-center gap-1.5 transition bg-slate-800 text-slate-500 cursor-not-allowed text-xs";
+
+            showSimStep(1);
+        }
+
+        function selectVehicle(type) {
+            selectedVehicleType = type;
+            const vehicles = ['motor', 'mobil', 'sepeda'];
+            
+            vehicles.forEach(v => {
+                const card = document.getElementById(`card-vehicle-${v}`);
+                const check = document.getElementById(`check-vehicle-${v}`);
+                if (v === type) {
+                    card.className = "cursor-pointer group relative p-5 rounded-2xl border-2 bg-blue-950/40 border-blue-500 shadow-xl transition flex flex-col justify-between space-y-4";
+                    check.innerHTML = '✓';
+                    check.className = "w-5 h-5 rounded-full border-2 border-blue-500 bg-blue-600 flex items-center justify-center font-bold text-white text-xs";
+                } else {
+                    card.className = "cursor-pointer group relative p-5 rounded-2xl border-2 bg-slate-900 border-slate-800 hover:border-slate-700 transition flex flex-col justify-between space-y-4";
+                    check.innerHTML = '';
+                    check.className = "w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center font-bold text-white text-xs";
+                }
+            });
+
+            document.getElementById('btnContinueStep2').disabled = false;
+            document.getElementById('btnContinueStep2').className = "px-6 py-3 font-bold rounded-xl flex items-center gap-1.5 transition bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 cursor-pointer text-xs";
+            
+            audioSynth.playPointUp();
+            showToast('Sistem', `Kendaraan ${type.toUpperCase()} terpilih!`, 'success');
+        }
+
+        function showSimStep(stepNum) {
+            for (let i = 1; i <= 4; i++) {
+                const stepDiv = document.getElementById(`sim-step-${i}`);
+                const indicator = document.getElementById(`step-indicator-${i}`);
+                
+                if (i === stepNum) {
+                    stepDiv.classList.remove('hidden');
+                    indicator.className = "pb-2 border-b-2 border-blue-500 text-blue-400 transition-all duration-300";
+                } else {
+                    stepDiv.classList.add('hidden');
+                    indicator.className = "pb-2 border-b-2 border-transparent text-slate-500 transition-all duration-300";
+                }
+            }
+        }
+
+        // --- STEP 2: GEAR RACK SELECTION ---
+        function goStep2() {
+            showSimStep(2);
+            renderGearRack();
+            updateGearChecklist();
+        }
+
+        function backToStep1() {
+            showSimStep(1);
+        }
+
+        function renderGearRack() {
+            const container = document.getElementById('gearContainer');
+            container.innerHTML = '';
+
+            const gears = GEAR_DATA[selectedVehicleType] || [];
+            
+            const charAvatar = document.getElementById('gearVisualChar');
+            charAvatar.innerText = currentUser.avatar;
+
+            gears.forEach(gear => {
+                const isSelected = selectedGears.includes(gear.id);
+                const itemDiv = document.createElement('div');
+                itemDiv.onclick = () => toggleGearSelection(gear.id);
+                itemDiv.className = `p-3 rounded-xl border cursor-pointer transition flex items-center justify-between gap-3 ${isSelected ? 'bg-blue-950/30 border-blue-500/60' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`;
+                
+                itemDiv.innerHTML = `
+                    <div class="space-y-0.5">
+                        <p class="text-xs font-bold text-slate-200">${gear.name}</p>
+                        <p class="text-[10px] text-slate-400 leading-tight">${gear.info}</p>
+                    </div>
+                    <div class="w-5 h-5 rounded flex items-center justify-center shrink-0 border ${isSelected ? 'bg-blue-600 border-blue-500 text-white' : 'border-slate-600 bg-slate-950'}">
+                        ${isSelected ? '✓' : ''}
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function toggleGearSelection(id) {
+            audioSynth.playHonk();
+            if (selectedGears.includes(id)) {
+                selectedGears = selectedGears.filter(gId => gId !== id);
+            } else {
+                selectedGears.push(id);
+            }
+            renderGearRack();
+            updateGearChecklist();
+        }
+
+        function updateGearChecklist() {
+            const listContainer = document.getElementById('gearSelectedChecklist');
+            listContainer.innerHTML = '';
+
+            if (selectedGears.length === 0) {
+                listContainer.innerHTML = '<p class="text-slate-500 italic text-[11px]">Belum melengkapi barang...</p>';
+                return;
+            }
+
+            const gears = GEAR_DATA[selectedVehicleType] || [];
+            selectedGears.forEach(id => {
+                const gear = gears.find(g => g.id === id);
+                if (gear) {
+                    const row = document.createElement('div');
+                    row.className = "flex items-center space-x-1.5 text-[11px] font-semibold py-0.5";
+                    if (gear.safe) {
+                        row.innerHTML = `<span class="text-emerald-400">✓</span> <span class="text-slate-300">${gear.name}</span>`;
+                    } else {
+                        row.innerHTML = `<span class="text-rose-400">✗</span> <span class="text-rose-300 line-through">${gear.name}</span>`;
+                    }
+                    listContainer.appendChild(row);
+                }
+            });
+        }
+
+        // --- STEP 3: INTERACTIVE CANVAS TOP-DOWN SIMULATION ---
+        function startRoadSimulation() {
+            const gears = GEAR_DATA[selectedVehicleType] || [];
+            
+            const mandatoryGears = gears.filter(g => g.safe);
+            mandatoryGears.forEach(g => {
+                if (!selectedGears.includes(g.id)) {
+                    simulationScore -= 15;
+                    violationLogs.push(`Kelalaian: Tidak mempersiapkan/menggunakan ${g.name}.`);
+                } else {
+                    complianceLogs.push(`Keselamatan: Mempersiapkan ${g.name}.`);
+                }
+            });
+
+            const dangerousGears = gears.filter(g => !g.safe);
+            dangerousGears.forEach(g => {
+                if (selectedGears.includes(g.id)) {
+                    simulationScore -= 20;
+                    violationLogs.push(`Pelanggaran: Menggunakan ${g.name} saat berkendara.`);
+                }
+            });
+
+            if (simulationScore < 0) simulationScore = 0;
+
+            showSimStep(3);
+            document.getElementById('gameCrashSplash').classList.add('hidden');
+            
+            // Inisialisasi State Game
+            isSimulationRunning = true;
+            roadY = 0;
+            junctionY = -500; // Reset Y Persimpangan
+            
+            playerCar.x = 165;
+            playerCar.y = 330;
+            playerCar.speed = 0;
+            playerCar.steerDir = 0;
+            playerCar.speedDir = 0;
+            
+            keysPressed = {};
+            entities = [];
+            buildings = [];
+            
+            for(let i=0; i<6; i++) {
+                spawnBuilding((i * 120) - 200);
+            }
+
+            spawnEntity('lubang', -150);
+
+            // Selalu spawn zebra_cross yang disatukan di persimpangan
+            spawnZebraCrossAtJunction();
+
+            trafficLight.y = -600;
+            trafficLight.state = 'HIJAU';
+            trafficLight.timer = 0;
+            trafficLight.active = true;
+
+            audioSynth.startEngine();
+            setupKeyboardControls();
+
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- SISTEM TOGGLE SPEED ( cruise control-like step physics ) ---
+        // Dipicu SEKALI ketika tombol Gas atau Rem ditekan, tidak perlu ditahan
+        function pressGas() {
+            if (!isSimulationRunning) return;
+            playerCar.speed = Math.min(playerCar.maxSpeed, playerCar.speed + playerCar.accel);
+            audioSynth.playPointUp();
+            showToast('Akselerasi', `Kecepatan bertambah ke laju konstan.`, 'success');
+        }
+
+        function pressBrake() {
+            if (!isSimulationRunning) return;
+            playerCar.speed = Math.max(0, playerCar.speed - playerCar.decel);
+            audioSynth.playBrakes();
+            showToast('Pengereman', `Melambatkan kendaraan secara bertahap.`, 'info');
+        }
+
+        function setupKeyboardControls() {
+            window.onkeydown = function(e) {
+                if (!isSimulationRunning) return;
+                
+                // Gunakan keysPressed murni untuk setir kiri/kanan (hold)
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'ArrowRight' || e.key === 'd') {
+                    keysPressed[e.key] = true;
+                }
+
+                // Sekali tekan (tidak perlu ditahan) untuk Gas dan Rem
+                if (e.key === 'ArrowUp' || e.key === 'w') {
+                    pressGas();
+                }
+                if (e.key === 'ArrowDown' || e.key === 's') {
+                    pressBrake();
+                }
+                if (e.key === ' ') {
+                    triggerSynthHonk();
+                }
+            };
+
+            window.onkeyup = function(e) {
+                if (!isSimulationRunning) return;
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'ArrowRight' || e.key === 'd') {
+                    delete keysPressed[e.key];
+                }
+            };
+        }
+
+        function steerControl(dir) {
+            playerCar.steerDir = dir;
+        }
+
+        function spawnBuilding(yPos) {
+            const side = Math.random() > 0.5 ? 'left' : 'right';
+            const type = BUILDING_TYPES[Math.floor(Math.random() * BUILDING_TYPES.length)];
+            buildings.push({
+                x: side === 'left' ? 15 : 295,
+                y: yPos,
+                width: 50,
+                height: 50,
+                emoji: type.emoji,
+                label: type.label
+            });
+        }
+
+        // Zebra Cross diletakkan tepat di persimpangan jalan
+        function spawnZebraCrossAtJunction() {
+            entities.push({
+                type: 'zebra_cross',
+                x: 100,
+                y: junctionY + 35, 
+                width: 160,
+                height: 30,
+                extra: {
+                    pedestrianX: 85,
+                    pedestrianDir: 0, 
+                    stoppedCorrectly: false
+                }
+            });
+        }
+
+        function spawnEntity(forcedType = null, forcedY = -80) {
+            // Batas kecepatan maksimum dihapus untuk fokus murni pada marka dan etika persimpangan
+            const types = ['lubang', 'mobil_lain'];
+            const type = forcedType || types[Math.floor(Math.random() * types.length)];
+            
+            let xPos = 110 + Math.random() * 110; 
+            let extra = {};
+
+            if (type === 'mobil_lain') {
+                const isOpposite = Math.random() > 0.5;
+                xPos = isOpposite ? 125 : 205; 
+                extra = {
+                    speed: isOpposite ? (1.5 + Math.random() * 1.5) : (0.5 + Math.random() * 1.0),
+                    emoji: Math.random() > 0.6 ? '🚙' : (Math.random() > 0.3 ? '🚕' : '🚗'),
+                    isOpposite: isOpposite
+                };
+            }
+
+            entities.push({
+                type: type,
+                x: xPos,
+                y: forcedY,
+                width: 30,
+                height: 45,
+                extra: extra
+            });
+        }
+
+        function gameLoop(time) {
+            if (!isSimulationRunning) return;
+
+            const dt = time - lastTime;
+            lastTime = time;
+
+            updateGamePhysics();
+            drawGameGraphics();
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function updateGamePhysics() {
+            // 1. Pergerakan Kemudi Player (Mulus)
+            let activeSteer = 0;
+            if (keysPressed['ArrowLeft'] || keysPressed['a']) activeSteer = -1;
+            if (keysPressed['ArrowRight'] || keysPressed['d']) activeSteer = 1;
+            
+            if (playerCar.steerDir !== 0) activeSteer = playerCar.steerDir;
+
+            playerCar.x += activeSteer * playerCar.steerSpeed;
+            if (playerCar.x < 100) playerCar.x = 100;
+            if (playerCar.x > 260 - playerCar.width) playerCar.x = 260 - playerCar.width;
+
+            // 2. Kecepatan Konstan (Cruise control murni tanpa natural drag yang melambatkan sendiri)
+            const speedRatio = playerCar.speed / playerCar.maxSpeed;
+            audioSynth.updateEngineSpeed(speedRatio);
+
+            const fakeKmh = Math.floor(playerCar.speed * 12);
+            document.getElementById('speedText').innerHTML = `${fakeKmh} <span class="text-[10px] text-slate-400">km/h</span>`;
+
+            roadY = (roadY + playerCar.speed) % 40;
+            
+            junctionY += playerCar.speed;
+            if (junctionY > 500) {
+                junctionY = -900;
+                entities = entities.filter(e => e.type !== 'zebra_cross');
+                spawnZebraCrossAtJunction();
+            }
+
+            buildings.forEach(b => {
+                b.y += playerCar.speed;
+            });
+            buildings = buildings.filter(b => b.y < 440);
+            if (buildings.length < 6) {
+                spawnBuilding(-100);
+            }
+
+            // 3. Sistem Traffic Light Persimpangan
+            if (trafficLight.active) {
+                trafficLight.y = junctionY + 10;
+                trafficLight.timer++;
+
+                if (trafficLight.timer > 340) {
+                    trafficLight.state = 'HIJAU';
+                    document.getElementById('engineStatus').innerText = '🟢 HIJAU';
+                    document.getElementById('engineStatus').className = 'text-sm font-black text-emerald-400 flex items-center justify-center gap-1';
+                    trafficLight.timer = 0;
+                } else if (trafficLight.timer > 180) {
+                    trafficLight.state = 'MERAH';
+                    document.getElementById('engineStatus').innerText = '🔴 MERAH';
+                    document.getElementById('engineStatus').className = 'text-sm font-black text-rose-500 flex items-center justify-center gap-1';
+                } else if (trafficLight.timer > 120) {
+                    trafficLight.state = 'KUNING';
+                    document.getElementById('engineStatus').innerText = '🟡 KUNING';
+                    document.getElementById('engineStatus').className = 'text-sm font-black text-amber-400 flex items-center justify-center gap-1';
+                }
+
+                if (trafficLight.state === 'MERAH' && trafficLight.y > 180 && trafficLight.y < 280) {
+                    if (playerCar.speed > 0.5) {
+                        simulationScore -= 1.5;
+                        audioSynth.playAlertAlarm();
+                        if (!violationLogs.includes("Menerobos lampu merah menyala.")) {
+                            violationLogs.push("Menerobos lampu merah menyala.");
+                        }
+                        showToast('Pelanggaran', 'Lampu MERAH! Silakan kurangi kecepatan (Rem) dan berhenti sempurna di belakang garis putih persimpangan.', 'error');
+                    }
+                }
+            }
+
+            // 4. Update Entities (Lubang, Mobil Lain, Zebra Cross)
+            entities.forEach(ent => {
+                if (ent.type === 'zebra_cross') {
+                    ent.y = junctionY + 35;
+                } else {
+                    ent.y += playerCar.speed;
+                }
+
+                if (ent.type === 'mobil_lain') {
+                    if (ent.extra.isOpposite) {
+                        ent.y += ent.extra.speed; 
+                    } else {
+                        ent.y -= ent.extra.speed;
+                    }
+                }
+
+                if (ent.type === 'zebra_cross') {
+                    // Penyeberang hanya melangkah jika lampu MERAH (pemain wajib berhenti)
+                    if (trafficLight.state === 'MERAH') {
+                        ent.extra.pedestrianDir = 1;
+                    } else {
+                        if (ent.extra.pedestrianX > 85 && ent.extra.pedestrianX < 260) {
+                            ent.extra.pedestrianDir = 1.8;
+                        } else {
+                            ent.extra.pedestrianDir = 0;
+                            ent.extra.pedestrianX = 85; 
+                        }
+                    }
+
+                    ent.extra.pedestrianX += ent.extra.pedestrianDir * 1.3;
+
+                    if (ent.y > 180 && ent.y < 290) {
+                        if (playerCar.speed === 0 && !ent.extra.stoppedCorrectly && trafficLight.state === 'MERAH') {
+                            ent.extra.stoppedCorrectly = true;
+                            simulationScore += 10;
+                            audioSynth.playPointUp();
+                            complianceLogs.push("Sabar berhenti dan mendahulukan penyeberang jalan saat lampu merah persimpangan.");
+                            showToast('Kepatuhan', 'Luar Biasa! Menghormati hak pejalan kaki di zebra cross persimpangan.', 'success');
+                        } else if (playerCar.speed > 0.8 && !ent.extra.stoppedCorrectly && trafficLight.state === 'MERAH' && ent.extra.pedestrianX > 100 && ent.extra.pedestrianX < 260) {
+                            simulationScore -= 2;
+                            audioSynth.playAlertAlarm();
+                            if (!violationLogs.includes("Meluncur kencang di zebra cross saat pejalan kaki menyeberang.")) {
+                                violationLogs.push("Meluncur kencang di zebra cross saat pejalan kaki menyeberang.");
+                            }
+                            showToast('Pelanggaran', 'Awas! Ada pejalan kaki sedang menyeberang di persimpangan!', 'error');
+                        }
+                    }
+                }
+
+                if (ent.type === 'lubang') {
+                    let dist = Math.hypot((playerCar.x + playerCar.width/2) - ent.x, (playerCar.y + playerCar.height/2) - ent.y);
+                    if (dist < 26) {
+                        simulationScore -= 12;
+                        audioSynth.playAlertAlarm();
+                        if (!violationLogs.includes("Menghantam lubang jalan raya.")) {
+                            violationLogs.push("Menghantam lubang jalan raya.");
+                        }
+                        showToast('Lubang Jalan', 'Guncangan keras! Hindari lubang aspal untuk menjaga ketahanan kendaraan.', 'error');
+                        ent.y = 500; 
+                    }
+                }
+
+                if (ent.type === 'mobil_lain') {
+                    if (
+                        playerCar.x < ent.x + 24 &&
+                        playerCar.x + playerCar.width > ent.x &&
+                        playerCar.y < ent.y + 36 &&
+                        playerCar.y + playerCar.height > ent.y
+                    ) {
+                        audioSynth.playCrashSound();
+                        stopTopDownSimulation();
+                        document.getElementById('gameCrashSplash').classList.remove('hidden');
+                        if (!violationLogs.includes("Terlibat tabrakan keras dengan kendaraan lain.")) {
+                            violationLogs.push("Terlibat tabrakan keras dengan kendaraan lain.");
+                        }
+                        simulationScore -= 35;
+                        if (simulationScore < 0) simulationScore = 0;
+                    }
+                }
+            });
+
+            entities = entities.filter(ent => ent.type === 'zebra_cross' || (ent.y < 440 && ent.y > -150));
+
+            if (entities.filter(e => e.type !== 'zebra_cross').length < 3 && Math.random() < 0.015) {
+                spawnEntity();
+            }
+
+            if (simulationScore < 0) simulationScore = 0;
+        }
+
+        // --- GAME CONTROLS TERMINATION & EVALUATION ---
+        function stopTopDownSimulation() {
+            isSimulationRunning = false;
+            audioSynth.stopEngine();
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        }
+
+        function finishSimAndEvaluate() {
+            stopTopDownSimulation();
+            evaluateFinalScore();
+        }
+
+        function evaluateFinalScore() {
+            showSimStep(4);
+            
+            if (simulationScore < 0) simulationScore = 0;
+            document.getElementById('finalScoreDisplay').innerText = simulationScore;
+
+            const banner = document.getElementById('complianceBanner');
+            const medalIcon = document.getElementById('evalMedalIcon');
+            const medalTitle = document.getElementById('evalMedalTitle');
+            const scoreNum = document.getElementById('evalScoreNumber');
+            const recText = document.getElementById('evalRekomendasiText');
+
+            scoreNum.innerText = `Skor Akhir: ${simulationScore} / 100 Pts`;
+
+            if (simulationScore >= 90) {
+                banner.className = "max-w-md mx-auto p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold";
+                banner.innerHTML = "🥇 LUAR BIASA! Medali Emas Berhasil Diraih. Anda pengendara teladan yang sangat aman.";
+                medalIcon.innerText = "🥇";
+                medalTitle.innerText = "Medali Emas";
+                medalTitle.className = "text-md font-black text-amber-400 font-montserrat uppercase";
+                recText.innerText = "Selamat! Anda menunjukkan kedisiplinan luar biasa selama berkendara di persimpangan jalan raya. Terus pertahankan etika berkendara ini!";
+            } else if (simulationScore >= 75) {
+                banner.className = "max-w-md mx-auto p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl text-xs font-bold";
+                banner.innerHTML = "🥈 BAGUS! Medali Perak Berhasil Diraih. Pemahaman berkendara Anda sudah sangat matang.";
+                medalIcon.innerText = "🥈";
+                medalTitle.innerText = "Medali Perak";
+                medalTitle.className = "text-md font-black text-slate-300 font-montserrat uppercase";
+                recText.innerText = "Pemahaman berkendara Anda sangat baik. Kurangi kesalahan minor seperti memacu kendaraan melebihi kecepatan rambu persimpangan.";
+            } else if (simulationScore >= minPassingScore) {
+                banner.className = "max-w-md mx-auto p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl text-xs font-bold";
+                banner.innerHTML = "🥉 LULUS! Medali Perunggu Berhasil Diraih. Tetap waspada di jalan raya.";
+                medalIcon.innerText = "🥉";
+                medalTitle.innerText = "Medali Perunggu";
+                medalTitle.className = "text-md font-black text-amber-700 font-montserrat uppercase";
+                recText.innerText = "Anda lulus kualifikasi dasar keselamatan. Harap lebih waspada untuk menghindari lubang aspal dan sabar menanti lampu hijau.";
+            } else {
+                banner.className = "max-w-md mx-auto p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs font-bold";
+                banner.innerHTML = "❌ GAGAL! Belum Layak Berkendara. Harap pelajari kembali aturan rambu keselamatan.";
+                medalIcon.innerText = "❌";
+                medalTitle.innerText = "Belum Lulus";
+                medalTitle.className = "text-md font-black text-rose-500 font-montserrat uppercase";
+                recText.innerText = "Keselamatan di jalan raya adalah hal mutlak. Silakan pelajari dampak-dampak pelanggaran di modul edukasi lalu coba kuis kasus kembali!";
+            }
+
+            const compList = document.getElementById('complianceList');
+            compList.innerHTML = '';
+            if (complianceLogs.length === 0) {
+                compList.innerHTML = '<li class="text-slate-500 italic">Tidak ada poin kepatuhan tercatat.</li>';
+            } else {
+                const uniqueComp = [...new Set(complianceLogs)];
+                uniqueComp.forEach(log => {
+                    const li = document.createElement('li');
+                    li.className = "flex items-start gap-1.5 bg-slate-950 p-2 rounded-xl border border-slate-850/60";
+                    li.innerHTML = `<span class="text-emerald-400 font-bold">✓</span> <span>${log}</span>`;
+                    compList.appendChild(li);
+                });
+            }
+
+            const violList = document.getElementById('violationList');
+            violList.innerHTML = '';
+            if (violationLogs.length === 0) {
+                violList.innerHTML = '<li class="text-slate-500 italic">Selamat! Anda bersih dari pelanggaran selama berkendara.</li>';
+            } else {
+                const uniqueViol = [...new Set(violationLogs)];
+                uniqueViol.forEach(log => {
+                    const li = document.createElement('li');
+                    li.className = "flex items-start gap-1.5 bg-rose-950/10 p-2 rounded-xl border border-rose-950/25 text-rose-300";
+                    li.innerHTML = `<span class="text-rose-400 font-bold">✗</span> <span>${log}</span>`;
+                    violList.appendChild(li);
+                });
+            }
+        }
+
+        function shareScoreToForum() {
+            let status = 'BELUM LULUS';
+            if (simulationScore >= 90) status = 'MEDALI EMAS 🥇';
+            else if (simulationScore >= 75) status = 'MEDALI PERAK 🥈';
+            else if (simulationScore >= minPassingScore) status = 'MEDALI PERUNGGU 🥉';
+
+            appendTrabotSystemMessage(`Hebat! Pengguna @${currentUser.username} baru saja mendapatkan predikat **${status}** dalam ujian mengemudi interaktif TRAXI.`);
+            showToast('AI Cerdas', 'Berhasil membagikan nilai rapor Anda ke asisten TRABOT!', 'success');
+            switchView('forum');
+        }
+
+        function finishSimulationSession() {
+            if (simulationScore >= minPassingScore) {
+                globalPoints += 150;
+            } else {
+                globalPoints += 40; 
+            }
+
+            globalLevel = Math.floor(globalPoints / 300) + 1;
+
+            document.getElementById('globalLevelBadge').innerText = `LVL ${globalLevel}`;
+            document.getElementById('globalPointsBadge').innerHTML = `<i data-lucide="trophy" class="w-3 h-3"></i> ${globalPoints}`;
+            document.getElementById('leaderboardUserPoints').innerHTML = `${globalPoints} pts 🔰`;
+            
+            const progressPts = globalPoints % 300;
+            const percentage = (progressPts / 300) * 100;
+            document.getElementById('levelProgresText').innerText = `${progressPts} / 300 Pts`;
+            document.getElementById('levelProgresBar').style.width = `${percentage}%`;
+
+            lucide.createIcons();
+            showToast('Poin Diklaim', 'Poin belajar global Anda berhasil ditambahkan!', 'success');
+            switchView('dashboard');
+        }
+
+        function drawGameGraphics() {
+            const canvas = document.getElementById('roadCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#16a34a'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#475569'; 
+            ctx.fillRect(80, 0, 200, canvas.height);
+
+            ctx.fillStyle = '#0f172a'; 
+            ctx.fillRect(100, 0, 160, canvas.height);
+
+            // Persimpangan horizontal
+            if (junctionY > -200 && junctionY < 450) {
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, junctionY, canvas.width, 100);
+
+                ctx.fillStyle = '#475569';
+                ctx.fillRect(0, junctionY - 10, canvas.width, 10);
+                ctx.fillRect(0, junctionY + 100, canvas.width, 10);
+            }
+
+            ctx.strokeStyle = '#eab308'; 
+            ctx.lineWidth = 3;
+            ctx.setLineDash([18, 18]);
+            ctx.lineDashOffset = -roadY;
+            ctx.beginPath();
+            ctx.moveTo(180, 0);
+            ctx.lineTo(180, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]); 
+
+            buildings.forEach(b => {
+                ctx.font = '30px sans-serif';
+                ctx.fillText(b.emoji, b.x, b.y);
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = 'bold 8px sans-serif';
+                ctx.fillText(b.label, b.x - 10, b.y + 12);
+            });
+
+            entities.forEach(ent => {
+                if (ent.type === 'lubang') {
+                    ctx.fillStyle = '#1e293b'; 
+                    ctx.beginPath();
+                    ctx.arc(ent.x, ent.y, 13, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                } else if (ent.type === 'mobil_lain') {
+                    ctx.font = '32px sans-serif';
+                    ctx.fillText(ent.extra.emoji, ent.x, ent.y);
+                    
+                    if (ent.extra.isOpposite) {
+                        ctx.fillStyle = 'rgba(251, 191, 36, 0.15)';
+                        ctx.beginPath();
+                        ctx.moveTo(ent.x + 6, ent.y + 30);
+                        ctx.lineTo(ent.x - 15, ent.y + 70);
+                        ctx.lineTo(ent.x + 45, ent.y + 70);
+                        ctx.lineTo(ent.x + 24, ent.y + 30);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                } else if (ent.type === 'zebra_cross') {
+                    ctx.fillStyle = '#ffffff';
+                    for (let x = 100; x < 260; x += 22) {
+                        ctx.fillRect(x, ent.y, 11, ent.height);
+                    }
+                    ctx.font = '20px sans-serif';
+                    ctx.fillText('🚶', ent.extra.pedestrianX, ent.y + 18);
+                }
+            });
+
+            if (trafficLight.active && trafficLight.y > -100 && trafficLight.y < 450) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(100, trafficLight.y + 55, 160, 5);
+
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(285, trafficLight.y, 22, 54);
+                
+                ctx.fillStyle = (trafficLight.state === 'MERAH') ? '#ef4444' : '#334155';
+                ctx.beginPath(); ctx.arc(296, trafficLight.y + 10, 5, 0, Math.PI * 2); ctx.fill();
+                
+                ctx.fillStyle = (trafficLight.state === 'KUNING') ? '#eab308' : '#334155';
+                ctx.beginPath(); ctx.arc(296, trafficLight.y + 27, 5, 0, Math.PI * 2); ctx.fill();
+                
+                ctx.fillStyle = (trafficLight.state === 'HIJAU') ? '#10b981' : '#334155';
+                ctx.beginPath(); ctx.arc(296, trafficLight.y + 44, 5, 0, Math.PI * 2); ctx.fill();
+            }
+
+            ctx.font = '34px sans-serif';
+            let playerEmoji = '🛵';
+            if (selectedVehicleType === 'mobil') playerEmoji = '🚗';
+            if (selectedVehicleType === 'sepeda') playerEmoji = '🚲';
+            
+            ctx.fillText(playerEmoji, playerCar.x, playerCar.y);
+        }
+
+        // --- GENERAL HELPERS ---
+        function openEvalModalDetail() {
+            document.getElementById('evalDetailModal').classList.remove('hidden');
+        }
+
+        function closeEvalModal() {
+            document.getElementById('evalDetailModal').classList.add('hidden');
+        }
+
+        function calculateCarbonEmission() {
+            const vehicle = document.getElementById('calcVehicle').value;
+            const distance = Number(document.getElementById('calcDistance').value);
+            const resultBox = document.getElementById('calcResultBox');
+
+            if (!distance || distance <= 0) {
+                showToast('Kalkulator', 'Masukkan jarak tempuh perjalanan di atas 0 KM.', 'error');
+                return;
+            }
+
+            audioSynth.playPointUp();
+
+            let emissionFactor = 0; 
+            let vehicleName = "";
+
+            if (vehicle === 'sepeda') {
+                emissionFactor = 0;
+                vehicleName = "Sepeda Gowes";
+            } else if (vehicle === 'motor') {
+                emissionFactor = 80;
+                vehicleName = "Sepeda Motor Skuter";
+            } else if (vehicle === 'mobil') {
+                emissionFactor = 120;
+                vehicleName = "Mobil Sedan";
+            }
+
+            const totalEmission = distance * emissionFactor;
+            const treesNeeded = Math.ceil(totalEmission / 60);
+
+            document.getElementById('calcEmissionVal').innerText = `${totalEmission.toLocaleString('id-ID')} Gram CO₂`;
+            
+            const compText = document.getElementById('calcComparisonText');
+            const treeText = document.getElementById('calcTreeText');
+
+            if (totalEmission === 0) {
+                compText.innerHTML = `Sangat hijau! Melakukan perjalanan ${distance} KM menggunakan **${vehicleName}** tidak menghasilkan gas buang berbahaya sama sekali. Tetap sehat dan ramah lingkungan! 🌿`;
+                treeText.innerText = `Luar biasa! Perjalanan ini tidak membebani ekosistem. Dibutuhkan 0 pohon baru untuk menetralkan karbon dioksida.`;
+            } else {
+                compText.innerHTML = `Menempuh jarak ${distance} KM dengan **${vehicleName}** menghasilkan sekitar **${totalEmission.toLocaleString('id-ID')} gram** zat gas buang karbon dioksida ke atmosfer bumi.`;
+                treeText.innerText = `Dibutuhkan setidaknya ${treesNeeded} pohon dewasa berdaun lebat yang hidup selama 24 jam penuh untuk menyerap emisi bensin yang dihasilkan perjalanan Anda.`;
+            }
+
+            resultBox.classList.remove('hidden');
+        }
+
+        // --- TRABOT AI CHAT ENGINE ---
+        function handleAiChatKey(event) {
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                sendAiChatMessage();
+            }
+        }
+
+        function sendAiChatMessage() {
+            const input = document.getElementById('aiChatInput');
+            const queryText = input.value.trim();
+            if (!queryText) return;
+
+            appendUserChatMessage(queryText);
+            input.value = '';
+
+            document.getElementById('aiChatTyping').classList.remove('hidden');
+
+            setTimeout(() => {
+                document.getElementById('aiChatTyping').classList.add('hidden');
+                
+                let foundAnswer = "";
+                const normalizedText = queryText.toLowerCase();
+
+                for (let i = 0; i < TRABOT_RESPONSES.length; i++) {
+                    const item = TRABOT_RESPONSES[i];
+                    if (item.keywords.some(kw => normalizedText.includes(kw))) {
+                        foundAnswer = item.ans;
+                        break;
+                    }
+                }
+
+                if (!foundAnswer) {
+                    foundAnswer = "Pertanyaan hebat tentang keselamatan! Sebagai anak pintar, ingat untuk selalu memprioritaskan keselamatan berkendara dengan memakai helm, mengencangkan sabuk pengaman, mematuhi lampu lalu lintas, dan menjaga batas aman keselamatan ya! Ada topik rambu atau emisi bensin yang spesifik ingin kamu tanyakan pada TRABOT?";
+                }
+
+                appendTrabotSystemMessage(foundAnswer);
+                audioSynth.playPointUp();
+            }, 1000);
+        }
+
+        function askPresetQuestion(qText) {
+            document.getElementById('aiChatInput').value = qText;
+            sendAiChatMessage();
+        }
+
+        function appendUserChatMessage(msg) {
+            const chatLog = document.getElementById('aiChatLog');
+            const userBubble = document.createElement('div');
+            userBubble.className = "flex items-start gap-2.5 max-w-[85%] ml-auto justify-end animate-fadeIn";
+            userBubble.innerHTML = `
+                <div class="bg-blue-600 border border-blue-500 p-3 rounded-2xl rounded-tr-none space-y-1 text-white">
+                    <p class="font-bold text-blue-200">Kamu</p>
+                    <p class="leading-relaxed">${msg}</p>
+                </div>
+            `;
+            chatLog.appendChild(userBubble);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function appendTrabotSystemMessage(msg) {
+            const chatLog = document.getElementById('aiChatLog');
+            const botBubble = document.createElement('div');
+            botBubble.className = "flex items-start gap-2.5 max-w-[85%] animate-fadeIn";
+            botBubble.innerHTML = `
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-blue-600 flex items-center justify-center shrink-0">
+                    <i data-lucide="cpu" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl rounded-tl-none space-y-1 text-slate-300">
+                    <p class="font-bold text-amber-400">TRABOT (TRAXI AI)</p>
+                    <p class="leading-relaxed whitespace-pre-line">${msg}</p>
+                </div>
+            `;
+            chatLog.appendChild(botBubble);
+            lucide.createIcons();
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // --- 10 QUESTIONS QUIZ ENGINE ---
+        function initKuisKasus() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            document.getElementById('quizBoxPlay').classList.remove('hidden');
+            document.getElementById('quizBoxResult').classList.add('hidden');
+            document.getElementById('quizBadgeStatus').innerText = "Belum Selesai";
+            document.getElementById('quizBadgeStatus').className = "text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full";
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            const questionData = QUIZ_QUESTIONS[currentQuizIndex];
+            document.getElementById('quizProgressTracker').innerText = `Soal ${currentQuizIndex + 1} dari 10`;
+            document.getElementById('quizScoreTracker').innerText = `Poin: ${quizScore}`;
+            document.getElementById('quizQuestionText').innerText = questionData.q;
+
+            const container = document.getElementById('quizOptionsContainer');
+            container.innerHTML = '';
+
+            questionData.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-left text-xs transition duration-200 text-slate-200 hover:text-white";
+                btn.onclick = () => submitQuizAnswer(opt);
+                btn.innerText = opt.text;
+                container.appendChild(btn);
+            });
+        }
+
+        function submitQuizAnswer(option) {
+            if (option.correct) {
+                quizScore += option.points;
+                audioSynth.playPointUp();
+                showToast('Jawaban Tepat', `Poin bertambah! +${option.points}`, 'success');
+            } else {
+                audioSynth.playAlertAlarm();
+                showToast('Jawaban Salah', 'Tindakan ini berbahaya bagi keselamatan jalan!', 'error');
+            }
+
+            currentQuizIndex++;
+            if (currentQuizIndex < QUIZ_QUESTIONS.length) {
+                renderQuizQuestion();
+            } else {
+                renderQuizResult();
+            }
+        }
+
+        function renderQuizResult() {
+            document.getElementById('quizBoxPlay').classList.add('hidden');
+            document.getElementById('quizBoxResult').classList.remove('hidden');
+
+            document.getElementById('quizResultScoreText').innerText = `Skor Tes Kasus Anda: ${quizScore} / 100 Poin`;
+            
+            const evalText = document.getElementById('quizResultEvaluasiText');
+            const badge = document.getElementById('quizBadgeStatus');
+
+            if (quizScore >= 80) {
+                evalText.innerText = "Luar biasa! Pemahaman etika dan tindakan darurat berkendara Anda sangat mumpuni. Anda siap menjadi teladan!";
+                badge.innerText = "Lulus Istimewa";
+                badge.className = "text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full";
+            } else if (quizScore >= 60) {
+                evalText.innerText = "Anda lulus uji kasus standar. Bacalah dampak pelanggaran lalu lintas sekali lagi untuk memperdalam pemahaman.";
+                badge.innerText = "Lulus Kualifikasi";
+                badge.className = "text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-full";
+            } else {
+                evalText.innerText = "Skor Anda di bawah standar kelayakan TRAXI. Silakan pelajari teori di modul lalu uji ulang kemampuan Anda.";
+                badge.innerText = "Tidak Lulus";
+                badge.className = "text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded-full";
+            }
+        }
+
+        function restartKuisKasus() {
+            initKuisKasus();
+        }
+
+        function renderAdminModeration() {
+            const tbody = document.getElementById('adminModerationTable');
+            tbody.innerHTML = '';
+
+            const mockLogs = [
+                { user: 'Siti_Alia', speed: 'Berhenti Tertib', medal: 'Medali Emas 🥇', status: 'LULUS' },
+                { user: 'Budi_Rider99', speed: 'Menghindar Lubang', medal: 'Medali Perak 🥈', status: 'LULUS' },
+                { user: 'Rangga_Sanjaya', speed: 'Menerobos Lampu', medal: 'Belum Lulus ❌', status: 'GAGAL' }
+            ];
+
+            mockLogs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-900 text-slate-300 hover:bg-slate-900/20 text-xs";
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-blue-400">@${log.user}</td>
+                    <td class="p-3">${log.speed}</td>
+                    <td class="p-3">${log.medal}</td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.status === 'LULUS' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}">${log.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateAdminParams() {
+            const penaltyVal = document.getElementById('adminPenaltyRange').value;
+            const passingVal = document.getElementById('adminPassingRange').value;
+
+            document.getElementById('adminPenaltyBadge').innerText = `-${penaltyVal} Pts`;
+            document.getElementById('adminPassingBadge').innerText = `${passingVal} Pts`;
+        }
+
+        function saveAdminConfig() {
+            penaltyPointsValue = Number(document.getElementById('adminPenaltyRange').value);
+            minPassingScore = Number(document.getElementById('adminPassingRange').value);
+
+            showToast('Admin Panel', 'Parameter regulasi permainan global berhasil diperbarui!', 'success');
+            switchView('dashboard');
+        }
+
+        // --- WINDOW ONLOAD INITIALIZER ---
+        window.onload = function() {
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
